@@ -12,14 +12,22 @@ export default function(): void {
   // Plugin dependencies.
   usePlugin('@nomiclabs/buidler-truffle5')
   usePlugin('@nomiclabs/buidler-web3')
+  usePlugin('@nomiclabs/buidler-etherscan')
 
   // Task definitions.
+<<<<<<< HEAD
   // Note: Tasks must be setup in a function. If task() is run in the
   // module body on test teardown the they will not be setup again
   /* eslint-disable @typescript-eslint/no-var-requires */
+  const { setupPublishTask } = require('./tasks/publish')
   const { setupStartTask } = require('./tasks/start-task')
+  setupPublishTask()
   setupStartTask()
   /* eslint-enable @typescript-eslint/no-var-requires */
+=======
+  require(path.join(__dirname, '/tasks/start-task'))
+  require(path.join(__dirname, '/tasks/publish'))
+>>>>>>> fd8bba0... Add publish task
 
   // Environment extensions.
   // No extensions atm.
