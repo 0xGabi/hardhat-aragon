@@ -106,15 +106,17 @@ describe('Run start-task - token-wrapper', function() {
     it('preInit - with bre, returns deployed token contract', async function() {
       const { bre, returnValue } = await getHookCall('preInit')
       assert(bre.config.aragon, 'no aragon config')
+      assert(isNonZeroAddress(returnValue.tokenAddress), 'no token address')
       assert(isNonZeroAddress(returnValue.rootAccount), 'no root account')
-      assert.typeOf(returnValue.intialCount, 'number', 'no intialCount')
     })
 
     it('getInitParams - returns init params', async function() {
       const { bre, returnValue } = await getHookCall('getInitParams')
       assert(bre.config.aragon, 'no aragon config')
-      const [intialCount] = returnValue
-      assert.typeOf(intialCount, 'number', 'wrong intialCount param')
+      const [tokenAddress, name, symbol] = returnValue
+      assert(isNonZeroAddress(tokenAddress), 'no token address')
+      assert.equal(name, 'Wrapped token', 'wrong token name')
+      assert.equal(symbol, 'wORG', 'wrong token symbol')
     })
 
     it('postInit - with bre, proxy', async function() {
