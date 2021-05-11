@@ -5,25 +5,14 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
+    "outDir": "./dist",
     "strict": true,
-    "esModuleInterop": true,
-    "noEmitOnError": true,
-    "noImplicitAny": false,
-    "moduleResolution": "node",
-    "allowJs": true,
-    "typeRoots": ["node_modules/@types", "../../node_modules/@types", "./@types"],
-    "outDir": "dist",
-    "baseUrl": "./",
-    "paths": {
-      "~/*": ["./*"]
-    }
+    "rootDirs": ["./src", "./test"],
+    "esModuleInterop": true
   },
-  "include": ["./src", "./test", "./bootstrap-paths.js", "./tsconfig.json"],
-  "exclude": ["./test/projects"],
-  "files": [
-    "./src/type-extensions.d.ts",
-    "./node_modules/@nomiclabs/buidler-etherscan/src/type-extensions.d.ts",
-    "./node_modules/@nomiclabs/buidler-web3/src/type-extensions.d.ts",
-    "./node_modules/@nomiclabs/buidler-truffle5/src/type-extensions.d.ts"    
+  "exclude": ["dist", "node_modules"],
+  "include": [
+    "./test",
+    "./src"
   ]
 }
