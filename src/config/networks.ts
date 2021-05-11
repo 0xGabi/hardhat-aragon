@@ -3,7 +3,7 @@ import {
   HttpNetworkConfig,
   NetworkConfig,
   Networks
-} from '@nomiclabs/buidler/types'
+} from 'hardhat/types'
 import { defaultLocalAragonBases, aragenMnemonic } from '~/src/params'
 import { AragonEnvironment } from '~/src/types'
 import { readArappIfExists } from '~/src/utils/arappUtils'
@@ -13,7 +13,7 @@ const aragonRpc = (network: string): string =>
 const localRpc = 'http://localhost:8545'
 const coverageRpc = 'http://localhost:8555'
 const frameRpc = 'http://localhost:1248'
-const frameOrigin = 'BuidlerAragon'
+const frameOrigin = 'HardhatAragon'
 
 const aragenNetwork: NetworkConfig = {
   url: localRpc,

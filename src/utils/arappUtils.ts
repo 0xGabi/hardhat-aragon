@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { BuidlerPluginError } from '@nomiclabs/buidler/plugins'
+import { HardhatPluginError } from 'hardhat/plugins'
 import { AragonAppJson } from '~/src/types'
 import { pathExists, readJson, readJsonIfExists } from './fsUtils'
 
@@ -13,7 +13,7 @@ const contractsPath = './contracts'
  */
 export function readArapp(): AragonAppJson {
   if (!pathExists(arappPath))
-    throw new BuidlerPluginError(
+    throw new HardhatPluginError(
       `No ${arappPath} found in current working directory\n ${process.cwd()}`
     )
   return readJson(arappPath)
@@ -68,7 +68,7 @@ export function getMainContractName(): string {
  */
 export function parseAppName(arapp: AragonAppJson, network?: string): string {
   if (!arapp.appName && !arapp.environments)
-    throw new BuidlerPluginError(
+    throw new HardhatPluginError(
       `No appName configured. 
 Add an 'appName' property in your arapp.json with your app's ENS name`
     )
@@ -97,7 +97,7 @@ Add an 'appName' property in your arapp.json with your app's ENS name`
 
     // If no guess was possible ask the user to provide it
     const networkId = network || 'development' // Don't print "undefined" for development
-    throw new BuidlerPluginError(
+    throw new HardhatPluginError(
       `No appName configured for network ${networkId}. 
 Add an 'appName' property in the environment of ${networkId} with your app's 
 ENS name in your arapp.json. If your app's name is the name accross networks,

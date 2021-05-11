@@ -1,8 +1,5 @@
 import { ethers } from 'ethers'
-import {
-  BuidlerRuntimeEnvironment,
-  HttpNetworkConfig
-} from '@nomiclabs/buidler/types'
+import { BuidlerRuntimeEnvironment, HttpNetworkConfig } from 'hardhat/types'
 import {
   AppInstallerOptions,
   AppInstaller,

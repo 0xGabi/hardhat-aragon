@@ -1,13 +1,10 @@
-import {
-  BuidlerRuntimeEnvironment,
-  HttpNetworkConfig
-} from '@nomiclabs/buidler/types'
+import { HardhatRuntimeEnvironment, HttpNetworkConfig } from 'hardhat/types'
 import { ethers } from 'ethers'
 
 /**
  * Resolve ENS name with custom ensAddress
  * @param name
- * @param bre
+ * @param hre
  * @param customEnsAddress
  */
 export async function resolveName(
@@ -18,12 +15,12 @@ export async function resolveName(
     name: string
     ensAddress: string
   },
-  bre: BuidlerRuntimeEnvironment
+  hre: HardhatRuntimeEnvironment
 ): Promise<string | undefined> {
-  const networkConfig = bre.network.config as HttpNetworkConfig
+  const networkConfig = hre.network.config as HttpNetworkConfig
 
-  const provider = new ethers.providers.Web3Provider(bre.web3.currentProvider, {
-    name: bre.network.name,
+  const provider = new ethers.providers.Web3Provider(hre.web3.currentProvider, {
+    name: hre.network.name,
     chainId: networkConfig.chainId || 5555,
     ensAddress
   })

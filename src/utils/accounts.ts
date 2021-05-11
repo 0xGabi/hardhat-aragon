@@ -1,13 +1,13 @@
-import { BuidlerRuntimeEnvironment } from '@nomiclabs/buidler/types'
+import { HardhatRuntimeEnvironment } from 'hardhat/types'
 
 /**
  * Returns the root or default account from a runtime environment
- * @param bre
+ * @param hre
  */
 export async function getRootAccount(
-  bre: BuidlerRuntimeEnvironment
+  hre: HardhatRuntimeEnvironment
 ): Promise<string> {
-  const from = bre.config.networks[bre.network.name].from
+  const from = hre.config.networks[hre.network.name].from
 
-  return from || (await bre.web3.eth.getAccounts())[0]
+  return from || (await hre.web3.eth.getAccounts())[0]
 }

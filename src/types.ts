@@ -1,13 +1,10 @@
 import { AbiItem as AbiItemFromWeb3 } from 'web3-utils'
-import {
-  BuidlerConfig,
-  BuidlerRuntimeEnvironment
-} from '@nomiclabs/buidler/types'
+import { HardhatConfig, HardhatRuntimeEnvironment } from 'hardhat/types'
 import { KernelInstance } from '~/typechain'
 
 export type AbiItem = AbiItemFromWeb3
 
-export interface BuidlerAragonConfig extends BuidlerConfig {
+export interface HardhatAragonConfig extends HardhatConfig {
   aragon?: AragonConfig
 }
 
@@ -60,7 +57,7 @@ export interface AragonConfig {
 
 type AragonHook<T, R> = (
   params: T & { log: (message: string) => void },
-  bre: BuidlerRuntimeEnvironment
+  hre: HardhatRuntimeEnvironment
 ) => Promise<R> | R
 
 export interface AragonConfigHooks {

@@ -1,5 +1,5 @@
 import IpfsHttpClient from 'ipfs-http-client'
-import { BuidlerPluginError } from '@nomiclabs/buidler/plugins'
+import { HardhatPluginError } from 'hardhat/plugins'
 
 /**
  * Sanity check to check if an IPFS API is active
@@ -12,6 +12,6 @@ export async function assertIpfsApiIsAvailable(
   try {
     await ipfs.version()
   } catch (e) {
-    throw new BuidlerPluginError(`IPFS API at ${ipfsApiUrl} is not available`)
+    throw new HardhatPluginError(`IPFS API at ${ipfsApiUrl} is not available`)
   }
 }

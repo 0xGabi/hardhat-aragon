@@ -1,11 +1,8 @@
 import { ethers } from 'ethers'
 import execa from 'execa'
-import { task, types } from '@nomiclabs/buidler/config'
-import { BuidlerPluginError } from '@nomiclabs/buidler/plugins'
-import {
-  BuidlerRuntimeEnvironment,
-  HttpNetworkConfig
-} from '@nomiclabs/buidler/types'
+import { task, types } from 'hardhat/config'
+import { HardhatPluginError } from 'hardhat/plugins'
+import { HardhatRuntimeEnvironment, HttpNetworkConfig } from 'hardhat/types'
 import {
   ZERO_ADDRESS,
   etherscanSupportedChainIds,
@@ -72,13 +69,12 @@ export function setupPublishTask(): void {
       'onlyContent',
       'Prevents contract compilation, deployment and artifact generation.'
     )
-    .addFlag('verify', 'Automatically verify contract on Etherscan.')
     .addFlag('skipValidation', 'Skip validation of artifacts files.')
     .addFlag('dryRun', 'Output tx data without broadcasting')
     .setAction(
       async (
         params,
-        bre: BuidlerRuntimeEnvironment
+        hre: HardhatRuntimeEnvironment
       ): Promise<apm.PublishVersionTxData> => {
         // Do param type verification here and call publishTask with clean params
         return await publishTask(
@@ -88,11 +84,10 @@ export function setupPublishTask(): void {
             managerAddress: params.managerAddress,
             ipfsApiUrl: params.ipfsApiUrl,
             onlyContent: params.onlyContent,
-            verify: params.verify,
             skipValidation: params.skipValidation,
             dryRun: params.dryRun
           },
-          bre
+          hre
         )
       }
     )
@@ -105,7 +100,6 @@ async function publishTask(
     managerAddress,
     ipfsApiUrl: ipfsApiUrlArg,
     onlyContent,
-    verify,
     skipValidation,
     dryRun
   }: {
@@ -114,34 +108,33 @@ async function publishTask(
     managerAddress: string
     ipfsApiUrl: string
     onlyContent: boolean
-    verify: boolean
     skipValidation: boolean
     dryRun: boolean
   },
-  bre: BuidlerRuntimeEnvironment
+  hre: HardhatRuntimeEnvironment
 ): Promise<apm.PublishVersionTxData> {
-  const aragonConfig = bre.config.aragon as AragonConfig
+  const aragonConfig = hre.config.aragon as AragonConfig
   const appSrcPath = aragonConfig.appSrcPath as string
   const distPath = aragonConfig.appBuildOutputPath as string
   const ignoreFilesPath = aragonConfig.ignoreFilesPath as string
-  const selectedNetwork = bre.network.name
-  const ipfsApiUrl = ipfsApiUrlArg || (bre.config.aragon || {}).ipfsApi
-  const hasEtherscanKey =
-    bre.config.etherscan && Boolean(bre.config.etherscan.apiKey)
+  const selectedNetwork = hre.network.name
+  const ipfsApiUrl = ipfsApiUrlArg || (hre.config.aragon || {}).ipfsApi
 
   // TODO: Warn the user their metadata files (e.g. appName) are not correct.
 
   const arapp = readArapp()
   const appName = parseAppName(arapp, selectedNetwork)
   const contractName = getMainContractName()
-  const rootAccount = await getRootAccount(bre)
+  const rootAccount = await getRootAccount(hre)
 
   // Initialize clients
-  const networkConfig = bre.network.config as HttpNetworkConfig
-  const provider = new ethers.providers.Web3Provider(
-    bre.web3.currentProvider,
+  const networkConfig = hre.network.config as HttpNetworkConfig
+
+  const signers = 
+  const provider = new ethers.providers.JsonRpcProvider(
+    hre.web3.currentProvider,
     networkConfig.ensAddress && {
-      name: bre.network.name,
+      name: hre.network.name,
       chainId: networkConfig.chainId || 5555,
       ensAddress: networkConfig.ensAddress
     }
@@ -157,17 +150,9 @@ async function publishTask(
 
   // Do sanity checks before compiling the contract or uploading files
   // So users do not have to wait a long time before seeing the config is not okay
-  if (!rootAccount)
-    throw new BuidlerPluginError(
-      `No account configured. Provide a mnemonic or private key for ${selectedNetwork} in the buidler.config.json. For more information check: https://buidler.dev/config/#json-rpc-based-networks`
-    )
-  if (verify && !hasEtherscanKey)
-    throw new BuidlerPluginError(
-      `To verify your contracts using Etherscan you need an API Key configure in buidler.config.json. Get one at: https://etherscan.io/apis`
-    )
   await apm.assertCanPublish(appName, rootAccount, provider)
   if (!ipfsApiUrl)
-    throw new BuidlerPluginError(
+    throw new HardhatPluginError(
       `No IPFS API url configured. Add 'aragon.ipfsApiUrl' to your buidler.config with
 a valid IPFS API url that you have permissions to upload and persist content to.
 Example values:
@@ -197,7 +182,7 @@ you may use a public IPFS API such as
     logMain(`Using provided contract address: ${contractAddress}`)
   } else if (!prevVersion || bump === 'major') {
     logMain('Deploying new implementation contract')
-    contractAddress = await _deployMainContract(contractName, verify, bre)
+    contractAddress = await _deployMainContract(contractName, hre)
     logMain(`New implementation contract address: ${contractAddress}`)
   } else {
     contractAddress = prevVersion.contractAddress
@@ -211,7 +196,7 @@ you may use a public IPFS API such as
 
   // Generate and validate Aragon artifacts, release files
   logMain(`Generating Aragon app artifacts`)
-  await generateArtifacts(distPath, bre)
+  await generateArtifacts(distPath, hre)
   const hasFrontend = appSrcPath ? true : false
   if (!skipValidation) validateArtifacts(distPath, hasFrontend)
 
@@ -238,7 +223,7 @@ you may use a public IPFS API such as
   })
 
   const ipfsGateway =
-    (bre.config.aragon || {}).ipfsGateway || defaultIpfsGateway
+    (hre.config.aragon || {}).ipfsGateway || defaultIpfsGateway
   const activeIpfsGateway = await guessGatewayUrl({
     ipfsApiUrl,
     ipfsGateway,
@@ -262,7 +247,7 @@ you may use a public IPFS API such as
   } else {
     const etherscanTxUrl = etherscanChainUrls[network.chainId]
 
-    const receipt = await bre.web3.eth
+    const receipt = await signer
       .sendTransaction({
         from: rootAccount,
         to: txData.to,
@@ -305,42 +290,17 @@ async function _getLastestVersionIfExists(
  * Deploys a new implementation contract and returns its address
  * @param contractName
  * @param verify
- * @param bre
+ * @param hre
  */
 async function _deployMainContract(
   contractName: string,
-  verify: boolean,
-  bre: BuidlerRuntimeEnvironment
+  hre: HardhatRuntimeEnvironment
 ): Promise<string> {
   // Compile contracts
-  await bre.run(TASK_COMPILE)
+  await hre.run(TASK_COMPILE)
   // Deploy contract
-  const MainContract = bre.artifacts.require(contractName)
+  const MainContract = hre.artifacts.require(contractName)
   const mainContract = await MainContract.new()
   logMain('Implementation contract deployed')
-  const chainId = await _getChainId(bre)
-  if (verify && etherscanSupportedChainIds.has(chainId)) {
-    try {
-      logMain('Verifying on Etherscan')
-      await bre.run(TASK_VERIFY_CONTRACT, {
-        contractName,
-        address: mainContract.address
-      })
-      logMain(`Successfully verified contract on Etherscan`)
-    } catch (e) {
-      logMain(`Etherscan verification failed. ${e} `)
-    }
-  }
   return mainContract.address
-}
-
-/**
- * Isolates logic to fix buidler issue that swaps web3 version when running the tests
- * It potentially loads version 1.2.1 instead of 1.2.6 where web3.eth.getChainId
- * is not a function and causes an error
- */
-async function _getChainId(bre: BuidlerRuntimeEnvironment): Promise<number> {
-  const provider = new ethers.providers.Web3Provider(bre.web3.currentProvider)
-  const net = await provider.getNetwork()
-  return net.chainId
 }

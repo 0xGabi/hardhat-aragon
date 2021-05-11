@@ -1,5 +1,5 @@
 import { ethers } from 'ethers'
-import { BuidlerPluginError } from '@nomiclabs/buidler/plugins'
+import { HardhatPluginError } from 'hardhat/plugins'
 import { getAppNameParts } from '~/src/utils/appName'
 import { apmRegistryAbi } from './abis'
 import * as repo from './repo'
@@ -22,7 +22,7 @@ export async function assertCanPublish(
     // If the repo exists, check if user has create version role
     const isAllowed = await repo.canPublishVersion(appName, sender, provider)
     if (!isAllowed)
-      throw new BuidlerPluginError(
+      throw new HardhatPluginError(
         `Account ${sender} does not have permissions to publish a new version in repo ${appName}`
       )
   } else {
@@ -31,7 +31,7 @@ export async function assertCanPublish(
     const registryAddress = await provider.resolveName(registryName)
 
     if (!registryAddress)
-      throw new BuidlerPluginError(`Registry ${registryName} does not exist`)
+      throw new HardhatPluginError(`Registry ${registryName} does not exist`)
 
     const registry = new ethers.Contract(
       registryAddress,
@@ -41,7 +41,7 @@ export async function assertCanPublish(
     const CREATE_REPO_ROLE = await registry.CREATE_REPO_ROLE()
     const isAllowed = await registry.canPerform(sender, CREATE_REPO_ROLE, [])
     if (!isAllowed)
-      throw new BuidlerPluginError(
+      throw new HardhatPluginError(
         `Account ${sender} does not have permissions to create a new repo in registry ${registryName}`
       )
   }
