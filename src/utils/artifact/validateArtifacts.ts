@@ -1,5 +1,5 @@
 import path from 'path'
-import { BuidlerPluginError } from '@nomiclabs/buidler/plugins'
+import { HardhatPluginError } from 'hardhat/plugins'
 import {
   artifactName,
   manifestName,
@@ -30,7 +30,7 @@ export function validateArtifacts(
   // Make sure all declared files in the manifest are there
   const missingFiles = findMissingManifestFiles(manifest, distPath, hasFrontend)
   if (missingFiles.length)
-    throw new BuidlerPluginError(
+    throw new HardhatPluginError(
       `
 Some files declared in manifest.json are not found in dist dir: ${distPath}
 ${missingFiles.map(file => ` - ${file.id}: ${file.path}`).join('\n')}
@@ -45,7 +45,7 @@ If you are sure you want to publish anyway, use the flag "--skip-validation".
   // Make sure that the roles in the contract match the ones in arapp.json
   const roleMatchErrors = matchContractRoles(functions, artifact.roles)
   if (roleMatchErrors.length)
-    throw new BuidlerPluginError(
+    throw new HardhatPluginError(
       `
 Some contract roles do not match declared roles in ${arappName}:
 ${roleMatchErrors.map(err => ` - ${err.id}: ${err.message}`).join('\n')}

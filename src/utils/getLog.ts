@@ -1,4 +1,4 @@
-import { BuidlerPluginError } from '@nomiclabs/buidler/plugins'
+import { HardhatPluginError } from 'hardhat/plugins'
 
 export const getLog = (
   receipt: Truffle.TransactionResponse,
@@ -7,7 +7,7 @@ export const getLog = (
 ): string => {
   const log = receipt.logs.find(({ event }) => event === logName)
   if (!log) {
-    throw new BuidlerPluginError(
+    throw new HardhatPluginError(
       `Cannot find proxy address. Unable to find ${logName} log.`
     )
   }

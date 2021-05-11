@@ -37,11 +37,11 @@ export function getPrettyPublishTxPreview({
       list.addData('App name', appName)
       list.addData('Initial version', nextVersion)
       list.addData('Manager address', txData.params[1])
-      break
+      hreak
 
     case 'newVersion':
       action = `Publish new version ${chalk.green(nextVersion)} (${bump})`
-      break
+      hreak
 
     default:
       throw Error(`Unknown txData methodName ${txData.methodName}`)

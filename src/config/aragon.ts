@@ -1,4 +1,4 @@
-import { ConfigExtender } from '@nomiclabs/buidler/types'
+import { ConfigExtender } from 'hardhat/types'
 import { AragonConfig } from '~/src/types'
 import { defaultIpfsGateway, defaultLocalAragonBases } from '~/src/params'
 

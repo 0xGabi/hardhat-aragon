@@ -1,6 +1,6 @@
 /**
  * Joins multiple url parts safely
- * - Does not break the protocol double slash //
+ * - Does not hreak the protocol double slash //
  * - Cleans double slashes at any point
  * @param args ("http://ipfs.io", "ipfs", "Qm")
  * @return "http://ipfs.io/ipfs/Qm"

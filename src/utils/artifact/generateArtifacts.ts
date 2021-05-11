@@ -1,6 +1,6 @@
 import path from 'path'
-import { TASK_FLATTEN_GET_FLATTENED_SOURCE } from '@nomiclabs/buidler/builtin-tasks/task-names'
-import { BuidlerRuntimeEnvironment } from '@nomiclabs/buidler/types'
+import { TASK_FLATTEN_GET_FLATTENED_SOURCE } from 'hardhat/builtin-tasks/task-names'
+import { HardhatRuntimeEnvironment } from 'hardhat/types'
 import { artifactName, manifestName, flatCodeName } from '~/src/params'
 import { AragonManifest, AbiItem } from '~/src/types'
 import {
@@ -17,22 +17,22 @@ import { generateAragonArtifact } from './generateAragonArtifact'
  * - manifest
  * - flatCode
  * @param outPath "dist"
- * @param bre
+ * @param hre
  */
 export async function generateArtifacts(
   outPath: string,
-  bre: BuidlerRuntimeEnvironment
+  hre: HardhatRuntimeEnvironment
 ): Promise<void> {
   const arapp = readArapp()
-  const appName = parseAppName(arapp, bre.network.name)
+  const appName = parseAppName(arapp, hre.network.name)
   const manifest = readJson<AragonManifest>(manifestName)
   const contractName: string = getMainContractName()
 
   // buidler will detect and throw for cyclic dependencies
   // any flatten task also compiles
-  const flatCode = await bre.run(TASK_FLATTEN_GET_FLATTENED_SOURCE)
+  const flatCode = await hre.run(TASK_FLATTEN_GET_FLATTENED_SOURCE)
   // Get ABI from generated artifacts in compilation
-  const abi = _readArtifact(contractName, bre).abi
+  const abi = _readArtifact(contractName, hre).abi
 
   const artifact = generateAragonArtifact(
     arapp,
@@ -47,7 +47,7 @@ export async function generateArtifacts(
   writeFile(path.join(outPath, flatCodeName), flatCode)
 }
 
-interface BuidlerArtifact {
+interface HardhatArtifact {
   contractName: string
   abi: AbiItem[]
   bytecode: string
@@ -59,11 +59,11 @@ interface BuidlerArtifact {
 /**
  * Internal util to type and encapsulate interacting with artifacts
  * @param contractName "Counter"
- * @param bre
+ * @param hre
  */
 function _readArtifact(
   contractName: string,
-  bre: BuidlerRuntimeEnvironment
-): BuidlerArtifact {
-  return bre.artifacts.require(contractName)
+  hre: HardhatRuntimeEnvironment
+): HardhatArtifact {
+  return hre.artifacts.require(contractName)
 }

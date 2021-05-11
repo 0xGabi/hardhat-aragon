@@ -1,7 +1,7 @@
 import { isHexString } from 'ethers/utils'
 import { homedir } from 'os'
 import path from 'path'
-import { ConfigExtender, HttpNetworkConfig } from '@nomiclabs/buidler/types'
+import { ConfigExtender, HttpNetworkConfig } from 'hardhat/types'
 import { aragenMnemonic } from '~/src/params'
 import { readJsonIfExists } from '~/src/utils/fsUtils'
 

@@ -1,4 +1,4 @@
-import { ConfigExtender } from '@nomiclabs/buidler/types'
+import { ConfigExtender } from 'hardhat/types'
 import { configExtender as configExtenderAragon } from './aragon'
 import { configExtender as configExtenderMnemonic } from './mnemonic'
 import { configExtender as configExtenderNetworks } from './networks'
