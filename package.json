@@ -1,13 +1,13 @@
 {
-  "name": "@aragon/buidler-aragon",
+  "name": "@1hive/hardhat-aragon",
   "version": "0.2.9",
-  "description": "Aragon Buidler plugin",
+  "description": "Aragon Hardhat plugin",
   "main": "dist/src/index.js",
-  "author": "Aragon Association <legal@aragon.org>",
+  "author": "1hive <info@1hive.org>",
   "license": "GPL-3.0-or-later",
   "keywords": [
     "aragon",
-    "buidler",
+    "hardhat",
     "plugin",
     "ethereum"
   ],
@@ -37,7 +37,6 @@
     "@solidity-parser/parser": "^0.6.0",
     "chalk": "^3.0.0",
     "chokidar": "^3.3.1",
-    "ethers": "^4.0.46",
     "ethjs-ens": "^2.0.1",
     "execa": "^4.0.0",
     "fs-extra": "^8.1.0",
@@ -65,7 +64,6 @@
     "@types/node-fetch": "^2.5.5",
     "@types/semver": "^7.1.0",
     "@types/sinon": "^7.5.2",
-    "@types/web3": "^1.2.2",
     "@typescript-eslint/eslint-plugin": "^2.16.0",
     "@typescript-eslint/parser": "^2.16.0",
     "bignumber.js": "^9.0.0",
@@ -74,7 +72,8 @@
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.9.0",
     "eslint-plugin-prettier": "^3.1.2",
-    "ethers": "^4.0.46",
+    "ethers": "^5.1.4",
+    "hardhat": "^2.2.1",
     "kill-port": "^1.6.0",
     "nyc": "^15.0.1",
     "prettier": "^1.19.1",
@@ -83,14 +82,7 @@
     "ts-node": "^8.5.4",
     "typechain": "^1.0.3",
     "typechain-target-truffle": "^1.0.2",
-    "typescript": "^3.7.4",
-    "web3": "^1.2.0"
+    "typescript": "^3.7.4"
   },
-  "peerDependencies": {
-    "@nomiclabs/buidler": "^1.3.0",
-    "@nomiclabs/buidler-etherscan": "^1.3.0",
-    "@nomiclabs/buidler-truffle5": "^1.3.0",
-    "@nomiclabs/buidler-web3": "^1.3.0",
-    "web3": "^1.2.0"
-  }
+  "peerDependencies": {}
 }
