@@ -1,41 +1,13 @@
 import { AbiItem as AbiItemFromWeb3 } from 'web3-utils'
-import { HardhatConfig, HardhatRuntimeEnvironment } from 'hardhat/types'
-import { KernelInstance } from '~/typechain'
+import { HardhatConfig } from 'hardhat/types'
 
-export type AbiItem = AbiItemFromWeb3
-
-export interface HardhatAragonConfig extends HardhatConfig {
-  aragon?: AragonConfig
+export interface PinningService {
+  name: string
+  endpoint: string
+  key: string
 }
 
-export interface DeployedAddresses {
-  ens: string
-  apm: string
-  daoFactory: string
-}
-
-export interface AragonConfig {
-  appServePort?: number
-  clientServePort?: number
-  appSrcPath?: string
-  appBuildOutputPath?: string
-  ignoreFilesPath?: string
-  deployedAddresses?: DeployedAddresses
-
-  /**
-   * IPFS gateway to pull published data; static files from existing
-   * APM versions. Used in publish to get your app's latests version
-   * or to pull external app data with the _experimentalAppInstaller
-   *
-   * Examples:
-   * - http://your-remote-node.io:8080
-   * - https://ipfs.io
-   * - https://ipfs.eth.aragon.network
-   *
-   * Defaults to: 'https://ipfs.eth.aragon.network'
-   */
-  ipfsGateway?: string
-
+export interface IpfsConfig {
   /**
    * IPFS HTTP API endpoint to push new data. Used in publish
    * to upload the assets of your new app's version
@@ -50,40 +22,22 @@ export interface AragonConfig {
    *
    * You must provide a valid value to publish a new version
    */
-  ipfsApi?: string
-
-  hooks?: AragonConfigHooks
+  url: string
+  pinning?: PinningService[]
 }
 
-type AragonHook<T, R> = (
-  params: T & { log: (message: string) => void },
-  hre: HardhatRuntimeEnvironment
-) => Promise<R> | R
+export type AbiItem = AbiItemFromWeb3
 
-export interface AragonConfigHooks {
-  preDao?: AragonHook<{}, void>
-  postDao?: AragonHook<
-    { dao: KernelInstance; _experimentalAppInstaller: AppInstaller },
-    void
-  >
-  preInit?: AragonHook<
-    {
-      proxy: Truffle.ContractInstance
-      _experimentalAppInstaller: AppInstaller
-    },
-    void
-  >
-  postInit?: AragonHook<
-    {
-      proxy: Truffle.ContractInstance
-      _experimentalAppInstaller: AppInstaller
-    },
-    void
-  >
-  getInitParams?: AragonHook<{}, any[]>
-  postUpdate?: AragonHook<{ proxy: Truffle.ContractInstance }, void>
+export interface HardhatAragonConfig extends HardhatConfig {
+  aragon?: AragonConfig
 }
 
+export interface AragonConfig {
+  ensAppName: string
+  appSrcPath?: string
+  appBuildOutputPath?: string
+  ignoreFilesPath?: string
+}
 /**
  * arapp.json
  */
@@ -244,21 +198,4 @@ export interface AppOptions {
   network?: NetworkType
   initializeArgs?: any[]
   skipInitialize?: boolean
-}
-
-export interface AppInstalled {
-  initialize: (_initializeArgs: any[]) => Promise<void>
-  createPermission: (roleName: string, entity?: string) => Promise<void>
-  address: string
-}
-
-export type AppInstaller = (
-  name: string,
-  appOptions?: AppOptions
-) => Promise<AppInstalled>
-
-export interface AppInstallerOptions {
-  apmAddress: string
-  dao: KernelInstance
-  ipfsGateway: string
 }
