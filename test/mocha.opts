@@ -1,7 +1,0 @@
---require dotenv/config
---require ts-node/register
---require tsconfig-paths/register
---require source-map-support/register
---exclude test/projects/**/*.ts
---timeout 300000
---exit
