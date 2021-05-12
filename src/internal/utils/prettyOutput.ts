@@ -1,4 +1,5 @@
 import chalk from 'chalk'
+import { HardhatPluginError } from 'hardhat/plugins'
 
 import { PublishVersionTxData, encodePublishVersionTxData } from './apm'
 import { getAppNameParts } from './appName'
@@ -42,7 +43,9 @@ export function getPrettyPublishTxPreview({
       break
 
     default:
-      throw Error(`Unknown txData methodName ${txData.methodName}`)
+      throw new HardhatPluginError(
+        `Unknown txData methodName ${txData.methodName}`
+      )
   }
 
   list.addData('Contract address', contractAddress)

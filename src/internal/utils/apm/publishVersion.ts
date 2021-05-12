@@ -1,5 +1,6 @@
 import { ethers } from 'ethers'
 import semver from 'semver'
+import { HardhatPluginError } from 'hardhat/plugins'
 
 import { getAppNameParts } from '../appName'
 import { appStorageAbi, apmRegistryAbi, repoAbi } from './abis'
@@ -37,7 +38,7 @@ export async function publishVersion(
 ): Promise<PublishVersionTxData> {
   const { version, contentUri, contractAddress } = versionInfo
   if (!semver.valid(version)) {
-    throw new Error(`${version} is not a valid semantic version`)
+    throw new HardhatPluginError(`${version} is not a valid semantic version`)
   }
 
   const repoAddress = await provider.resolveName(appName)
@@ -55,8 +56,10 @@ export async function publishVersion(
     const { shortName, registryName } = getAppNameParts(appName)
     const registryAddress = await provider.resolveName(registryName)
     const managerAddress = options && options.managerAddress
-    if (!registryAddress) throw Error(`Registry ${registryName} does not exist`)
-    if (!managerAddress) throw Error('managerAddress must be provided')
+    if (!registryAddress)
+      throw new HardhatPluginError(`Registry ${registryName} does not exist`)
+    if (!managerAddress)
+      throw new HardhatPluginError('managerAddress must be provided')
 
     return {
       to: registryAddress,
@@ -117,6 +120,8 @@ export function encodePublishVersionTxData({
       return apmRepo.encodeFunctionData('newVersion', params)
 
     default:
-      throw Error(`Unsupported publish version method name: ${methodName}`)
+      throw new HardhatPluginError(
+        `Unsupported publish version method name: ${methodName}`
+      )
   }
 }

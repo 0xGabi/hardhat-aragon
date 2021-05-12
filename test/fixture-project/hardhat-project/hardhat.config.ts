@@ -6,14 +6,18 @@ import '../../../src/internal/index'
 process.removeAllListeners('warning')
 
 const config: HardhatUserConfig = {
-  solidity: '0.7.3',
+  solidity: '0.4.24',
   defaultNetwork: 'hardhat',
   aragon: {
     appEnsName: 'counter333.open.aragonpm.eth',
     appContractName: 'Counter'
   },
   ipfs: {
-    url: ''
+    pinning: {
+      name: 'pinata',
+      endpoint: 'https://api.pinata.cloud',
+      key: '98e70822266a7ec39d4c'
+    }
   },
   networks: {
     hardhat: {

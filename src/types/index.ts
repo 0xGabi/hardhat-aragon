@@ -6,8 +6,15 @@ export interface PinningService {
   key: string
 }
 
+export interface IpfsUserConfig {
+  url?: string
+  gateway?: string
+  pinning?: PinningService
+}
+
 export interface IpfsConfig {
   url: string
+  gateway: string
   pinning?: PinningService
 }
 

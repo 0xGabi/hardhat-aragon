@@ -28,11 +28,11 @@
     "report-coverage": "codecov"
   },
   "dependencies": {
-    "@solidity-parser/parser": "^0.6.0",
+    "@solidity-parser/parser": "^0.12.2",
     "chalk": "^4.1.1",
     "execa": "^5.0.0",
     "fs-extra": "^8.1.0",
-    "ipfs-http-client": "^50.0.1-rc.5",
+    "ipfs-http-client": "^50.0.0",
     "node-fetch": "^2.6.1"
   },
   "devDependencies": {

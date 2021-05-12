@@ -1,5 +1,3 @@
-import { HardhatRuntimeEnvironment } from 'hardhat/types'
-
 import { PinningService } from '../../../types'
 
 interface Cid {
@@ -11,12 +9,12 @@ interface Cid {
 }
 
 async function addPinningServices(
-  hre: HardhatRuntimeEnvironment,
+  ipfs: any,
   pinning: PinningService
 ): Promise<void> {
   // const exitingServices = await hre.ipfs.pin.remote.service.ls()
 
-  await hre.ipfs.pin.remote.sevice.add(pinning.name, {
+  await ipfs.pin.remote.sevice.add(pinning.name, {
     endpoint: new URL(pinning.endpoint),
     key: pinning.key
   })
@@ -29,20 +27,18 @@ async function addPinningServices(
  * - .gitignore
  */
 export async function pinContentToIpfs({
-  hre,
+  ipfs,
   pinning,
   cid,
   name
 }: {
-  hre: HardhatRuntimeEnvironment
+  ipfs: any
   pinning: PinningService
   cid: Cid
   name: string
 }): Promise<string> {
-  hre.ipfs
-
-  await addPinningServices(hre, pinning)
-  const pin = await hre.ipfs.pin.remote.add(cid, {
+  await addPinningServices(ipfs, pinning)
+  const pin = await ipfs.pin.remote.add(cid, {
     service: pinning.name,
     name
   })

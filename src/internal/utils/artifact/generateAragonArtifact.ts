@@ -7,6 +7,7 @@ import { parseContractFunctions, AragonContractFunction } from '../ast'
 import { readArapp } from '../arappUtils'
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
 import { FunctionFragment } from '@ethersproject/abi'
+import { HardhatPluginError } from 'hardhat/plugins'
 
 const abiFallback = {
   payable: true,
@@ -93,7 +94,8 @@ export function generateAragonArtifact(
   contractName?: string
 ): AragonArtifact {
   if (typeof functionsOrSourceCode === 'string') {
-    if (!contractName) throw Error('contractName must be defined')
+    if (!contractName)
+      throw new HardhatPluginError('contractName must be defined')
     const functions = parseContractFunctions(
       functionsOrSourceCode,
       contractName
@@ -102,7 +104,7 @@ export function generateAragonArtifact(
   } else if (Array.isArray(functionsOrSourceCode)) {
     return _generateAragonArtifact(appName, abi, functionsOrSourceCode)
   } else {
-    throw Error(
+    throw new HardhatPluginError(
       'Parameter functionsOrSourceCode must be of type AragonContractFunction[] | string'
     )
   }

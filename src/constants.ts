@@ -1,4 +1,5 @@
-export const DEFAULT_IPFS_ENDPOINT = 'http://localhost:5001'
+export const DEFAULT_IPFS_API_ENDPOINT = 'http://localhost:5001'
+export const DEFAULT_IPFS_GATEWAY = 'https://ipfs.io'
 
 export const DEFAULT_APP_SRC_PATH = 'app/'
 export const DEFAULT_APP_BUILD_PATH = 'dist/'
