@@ -1,3 +1,5 @@
+import { HardhatPluginError } from 'hardhat/plugins'
+
 import { namehash } from './namehash'
 
 const DEFAULT_APM_REGISTRY = 'aragonpm.eth'
@@ -48,7 +50,7 @@ export function getFullAppName(
   appName: string,
   registry = DEFAULT_APM_REGISTRY
 ): string {
-  if (!appName) throw Error(`appName is not defined`)
+  if (!appName) throw new HardhatPluginError(`appName is not defined`)
   // Already full ENS domain
   if (appName.includes('.')) return appName
   // Concat with registry

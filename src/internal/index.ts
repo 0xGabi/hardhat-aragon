@@ -14,7 +14,8 @@ import {
   DEFAULT_APP_BUILD_PATH,
   DEFAULT_APP_SRC_PATH,
   DEFAULT_IGNORE_PATH,
-  DEFAULT_IPFS_ENDPOINT,
+  DEFAULT_IPFS_API_ENDPOINT,
+  DEFAULT_IPFS_GATEWAY,
   DEFAULT_APP_BUILD_SCRIPT,
   EXPLORER_CHAIN_URLS
 } from '../constants'
@@ -45,8 +46,10 @@ import { pinContentToIpfs } from './utils/ipfs/pinContentToIpfs'
 
 extendConfig(
   (config: HardhatConfig, userConfig: Readonly<HardhatUserConfig>) => {
-    config.ipfs = userConfig.ipfs ?? {
-      url: DEFAULT_IPFS_ENDPOINT
+    config.ipfs = {
+      url: userConfig.ipfs?.url ?? DEFAULT_IPFS_API_ENDPOINT,
+      gateway: userConfig.ipfs?.gateway ?? DEFAULT_IPFS_GATEWAY,
+      pinning: userConfig.ipfs?.pinning
     }
 
     config.aragon = {
@@ -79,7 +82,7 @@ extendConfig(
 extendEnvironment(hre => {
   hre.ipfs = lazyObject(() => {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const ipfsHttpClient = require('ipfs-http-client')
+    const { create } = require('ipfs-http-client')
 
     let url
     try {
@@ -89,7 +92,7 @@ extendEnvironment(hre => {
 The IPFS URL must be of the following format: http(s)://host[:port]/[path]`)
     }
 
-    return ipfsHttpClient({
+    return create({
       protocol: url.protocol.replace(/[:]+$/, ''),
       host: url.hostname,
       port: url.port,
@@ -155,7 +158,9 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
       // Do sanity checks before compiling the contract or uploading files
       // So users do not have to wait a long time before seeing the config is not okay
       await apm.assertCanPublish(finalAppEnsName, owner.address, provider)
-      await assertIpfsApiIsAvailable(hre)
+
+      const ipfs = hre.ipfs
+      await assertIpfsApiIsAvailable(ipfs, hre.config.ipfs.url)
 
       // Using let + if {} block instead of a ternary operator
       // to assign value and log status to console
@@ -175,10 +180,10 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
         logMain(`Reusing previous version contract address: ${contractAddress}`)
       }
 
-      if (pathExists(appSrcPath)) {
-        logMain(`Running app build script`)
-        await execa('npm', ['run', appBuildScript], { cwd: appSrcPath })
-      }
+      // if (pathExists(appSrcPath)) {
+      //   logMain(`Running app build script`)
+      //   await execa('npm', ['run', appBuildScript], { cwd: appSrcPath })
+      // }
 
       // Generate and validate Aragon artifacts, release files
       logMain(`Generating Aragon app artifacts`)
@@ -191,7 +196,7 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
       logMain('Uploading release assets to IPFS...')
       const cid = await uploadDirToIpfs({
         dirPath: appBuildOutputPath,
-        hre,
+        ipfs,
         ignore: createIgnorePatternFromFiles(ignoreFilesPath)
       })
       const contentHash = cid.toString()
@@ -201,7 +206,7 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
         // Pin content to pinning services
         logMain('Pinning content...')
         const pin = await pinContentToIpfs({
-          hre,
+          ipfs,
           pinning: hre.config.ipfs.pinning,
           cid,
           name: finalAppEnsName
@@ -226,8 +231,8 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
       )
 
       const activeIpfsGateway = await guessGatewayUrl({
-        ipfsApiUrl: DEFAULT_IPFS_ENDPOINT,
-        ipfsGateway: DEFAULT_IPFS_ENDPOINT,
+        ipfsApiUrl: DEFAULT_IPFS_API_ENDPOINT,
+        ipfsGateway: DEFAULT_IPFS_API_ENDPOINT,
         contentHash
       })
 
@@ -239,7 +244,7 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
           bump,
           contractAddress,
           contentHash,
-          ipfsGateway: activeIpfsGateway || DEFAULT_IPFS_ENDPOINT
+          ipfsGateway: activeIpfsGateway || DEFAULT_IPFS_API_ENDPOINT
         })
       )
 

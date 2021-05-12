@@ -1,4 +1,5 @@
 import semver from 'semver'
+import { HardhatPluginError } from 'hardhat/plugins'
 
 type SemverBump = 'patch' | 'minor' | 'major'
 const bumps: SemverBump[] = ['patch', 'minor', 'major']
@@ -6,7 +7,7 @@ const bumps: SemverBump[] = ['patch', 'minor', 'major']
 /**
  * Parse and validate a string that may be a semver bump or version
  * given a previous version returns the bump type and next version
- * or throws an error if the combination is not valid
+ * or throws an HardhatPluginError if the combination is not valid
  * For first releases, set prevVersion to undefined
  * @param bumpOrVersion
  * @param prevVersion
@@ -15,13 +16,14 @@ export default function parseAndValidateBumpOrVersion(
   bumpOrVersion: string,
   prevVersion = '0.0.0'
 ): { bump: SemverBump; nextVersion: string } {
-  if (!semver.valid(prevVersion)) throw Error('Previous version must be valid')
+  if (!semver.valid(prevVersion))
+    throw new HardhatPluginError('Previous version must be valid')
 
   if (bumps.includes(bumpOrVersion as SemverBump)) {
     // case bumpOrVersion = bump
     const bump = bumpOrVersion as SemverBump
     const nextVersion = semver.inc(prevVersion, bump)
-    if (!nextVersion) throw Error(`Invalid bump ${bump}`)
+    if (!nextVersion) throw new HardhatPluginError(`Invalid bump ${bump}`)
     return {
       bump,
       nextVersion
@@ -32,7 +34,9 @@ export default function parseAndValidateBumpOrVersion(
 
     // Make sure nextVersion is clean, forbid "v0.2.0-beta.1"
     if (!isSemverClean(nextVersion))
-      throw Error(`next version must be a simple semver: ${nextVersion}`)
+      throw new HardhatPluginError(
+        `next version must be a simple semver: ${nextVersion}`
+      )
 
     // No need to call the APM Repo smart contract isValidBump function
     // since it does exactly the same logic as below
@@ -43,10 +47,12 @@ export default function parseAndValidateBumpOrVersion(
           nextVersion
         }
 
-    throw Error(`Invalid bump from ${prevVersion} to ${nextVersion}`)
+    throw new HardhatPluginError(
+      `Invalid bump from ${prevVersion} to ${nextVersion}`
+    )
   } else {
     // invalid case
-    throw Error(
+    throw new HardhatPluginError(
       `Must provide a valid bump or valid semantic version: ${bumpOrVersion}`
     )
   }

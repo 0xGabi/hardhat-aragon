@@ -5,6 +5,7 @@ import * as parser from '@solidity-parser/parser'
 import { parseFunctionsNotices } from './parseFunctionNotices'
 import { AragonContractFunction } from './types'
 import { coerceFunctionSignature } from './utils'
+import { HardhatPluginError } from 'hardhat/plugins'
 
 /**
  * Helper to parse the role name from a modifier node
@@ -12,7 +13,7 @@ import { coerceFunctionSignature } from './utils'
  * @param node
  * @return "CREATE_PAYMENTS_ROLE"
  */
-function parseRoleIdFromNode(node: parser.ModifierInvocation): string {
+function parseRoleIdFromNode(node: ModifierInvocation): string {
   const [roleIdArg] = node.arguments || []
   switch (roleIdArg.type) {
     case 'Identifier':
@@ -149,7 +150,9 @@ export function parseContractFunctions(
 
   // Parse contract definitions in the first ast node which should be a SourceUnit
   if (ast.type !== 'SourceUnit')
-    throw Error('First block is not of expected type SourceUnit')
+    throw new HardhatPluginError(
+      'First block is not of expected type SourceUnit'
+    )
   // Aggregate all contracts for recursively parsing bases below
   const contracts: parser.ContractDefinition[] = ast.children.filter(
     node => node.type === 'ContractDefinition' && node.kind === 'contract'

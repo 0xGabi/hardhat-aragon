@@ -1,4 +1,4 @@
-import { HardhatRuntimeEnvironment } from 'hardhat/types'
+import { HardhatPluginError } from 'hardhat/plugins'
 import { globSource } from 'ipfs-http-client'
 import path from 'path'
 
@@ -24,17 +24,17 @@ interface IpfsAddResult {
  */
 export async function uploadDirToIpfs({
   dirPath,
-  hre,
+  ipfs,
   ignore,
   progress
 }: {
   dirPath: string
-  hre: HardhatRuntimeEnvironment
+  ipfs: any
   ignore?: string[]
   progress?: (totalBytes: number) => void
 }): Promise<Cid> {
   const results: IpfsAddResult[] = []
-  for await (const entry of hre.ipfs.add(
+  for await (const entry of ipfs.add(
     globSource(dirPath, { recursive: true, ignore }),
     { progress }
   )) {
@@ -49,7 +49,7 @@ export async function uploadDirToIpfs({
   const rootName = path.parse(dirPath).name
   const rootResult = results.find(r => r.path === rootName)
   if (!rootResult)
-    throw Error(
+    throw new HardhatPluginError(
       `root ${rootName} not found in results: \n${results
         .map(r => r.path)
         .join('\n')}`

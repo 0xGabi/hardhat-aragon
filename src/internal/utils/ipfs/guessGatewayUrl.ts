@@ -1,3 +1,4 @@
+import { HardhatPluginError } from 'hardhat/plugins'
 import { uniq } from 'lodash'
 import fetch from 'node-fetch'
 import { urlJoin, parseUrlSafe } from '../url'
@@ -28,7 +29,7 @@ export async function guessGatewayUrl({
         const testUrl = urlJoin(url, 'ipfs', contentHash)
         const res = await fetch(testUrl, { timeout: 3000 })
         // node-fetch does not throw on error status codes
-        if (!res.ok) throw Error(`Not ok ${res.statusText}`)
+        if (!res.ok) throw new HardhatPluginError(`Not ok ${res.statusText}`)
         await res.text()
         // If the request succeeds, return the url to be used as gateway
         return url

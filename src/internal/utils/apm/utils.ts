@@ -1,4 +1,5 @@
 import { ethers } from 'ethers'
+import { HardhatPluginError } from 'hardhat/plugins'
 import semver from 'semver'
 
 import { urlJoin } from '../url'
@@ -31,7 +32,7 @@ export function parseApmVersionReturn(res: ApmVersionReturn): ApmVersion {
  */
 export function toApmVersionArray(version: string): [number, number, number] {
   const semverObj = semver.parse(version)
-  if (!semverObj) throw Error(`Invalid semver ${version}`)
+  if (!semverObj) throw new HardhatPluginError(`Invalid semver ${version}`)
   return [semverObj.major, semverObj.minor, semverObj.patch]
 }
 
@@ -76,19 +77,24 @@ export function contentUriToFetchUrl(
   contentUri: string,
   options?: { ipfsGateway?: string }
 ): string {
-  if (!contentUri) throw Error(`contentUri is empty`)
+  if (!contentUri) throw new HardhatPluginError(`contentUri is empty`)
   const [protocol, location] = contentUri.split(/[/:](.+)/)
   switch (protocol) {
     case 'http':
     case 'https':
-      if (!location) throw Error(`contentUri location not set: ${contentUri}`)
+      if (!location)
+        throw new HardhatPluginError(
+          `contentUri location not set: ${contentUri}`
+        )
       return location.includes('://') ? location : contentUri
     case 'ipfs':
       if (!options || !options.ipfsGateway)
-        throw Error(`Must provide an ipfsGateway for protocol 'ipfs'`)
+        throw new HardhatPluginError(
+          `Must provide an ipfsGateway for protocol 'ipfs'`
+        )
       return joinIpfsLocation(options.ipfsGateway, location)
     default:
-      throw Error(`Protocol '${protocol}' not supported`)
+      throw new HardhatPluginError(`Protocol '${protocol}' not supported`)
   }
 }
 
@@ -101,8 +107,10 @@ export function toContentUri(
   protocol: 'http' | 'https' | 'ipfs',
   location: string
 ): string {
-  if (!protocol) throw Error('contentURI protocol must be defined')
-  if (!location) throw Error('contentURI location must be defined')
+  if (!protocol)
+    throw new HardhatPluginError('contentURI protocol must be defined')
+  if (!location)
+    throw new HardhatPluginError('contentURI location must be defined')
   return utf8ToHex([protocol, location].join(':'))
 }
 
