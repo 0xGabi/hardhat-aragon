@@ -1,26 +1,43 @@
 import { utils } from 'ethers'
 
-export interface PinningService {
-  name: string
-  endpoint: string
+export interface PinataConfig {
   key: string
+  secret: string
 }
 
 export interface IpfsUserConfig {
   url?: string
   gateway?: string
-  pinning?: PinningService
+  pinata?: PinataConfig
 }
 
 export interface IpfsConfig {
   url: string
   gateway: string
-  pinning?: PinningService
+  pinata?: PinataConfig
+}
+
+export interface Dependencies {
+  appName: string // 'vault.aragonpm.eth'
+  version: string // '^4.0.0'
+  initParam: string // '_vault'
+  state: string // 'vault'
+  requiredPermissions: {
+    name: string // 'TRANSFER_ROLE'
+    params: string // '*'
+  }[]
+}
+export interface Role {
+  name: string // 'Create new payments'
+  id: string // 'CREATE_PAYMENTS_ROLE'
+  params: string[] //  ['Token address', ... ]
 }
 
 export interface AragonConfig {
   appEnsName: string
   appContractName: string
+  appRoles: Role[]
+  appDependencies: Dependencies[]
   appSrcPath: string
   appBuildOutputPath: string
   appBuildScript: string
@@ -30,17 +47,12 @@ export interface AragonConfig {
 export interface AragonUserConfig {
   appEnsName: string
   appContractName: string
+  appRoles?: Role[]
+  appDependencies?: Dependencies[]
   appSrcPath?: string
   appBuildOutputPath?: string
   appBuildScript?: string
   ignoreFilesPath?: string
-}
-
-export interface Role {
-  name: string // 'Create new payments'
-  id: string // 'CREATE_PAYMENTS_ROLE'
-  params: string[] //  ['Token address', ... ]
-  bytes: string // '0x5de467a460382d13defdc02aacddc9c7d6605d6d4e0b8bd2f70732cae8ea17bc'
 }
 
 // The aragon manifest requires the use of camelcase for some names
@@ -80,8 +92,12 @@ export interface AragonArtifactFunction {
   abi: utils.Fragment | null
 }
 
-export interface AragonArtifact extends AragonAppJson {
-  roles: Role[]
+export interface RoleWithBytes extends Role {
+  bytes: string // '0x5de467a460382d13defdc02aacddc9c7d6605d6d4e0b8bd2f70732cae8ea17bc'
+}
+
+export interface AragonArtifact {
+  roles: RoleWithBytes[]
   abi: utils.Fragment[]
   /**
    * All publicly accessible functions
@@ -95,6 +111,7 @@ export interface AragonArtifact extends AragonAppJson {
   deprecatedFunctions: {
     [version: string]: AragonArtifactFunction[]
   }
+  dependencies: Dependencies[]
   /**
    * The flaten source code of the contracts must be included in
    * any type of release at this path
@@ -102,49 +119,10 @@ export interface AragonArtifact extends AragonAppJson {
   flattenedCode: string // "./code.sol"
   appId: string
   appName: string
-
-  // env: AragonEnvironment // DEPRECATED
-  // deployment: any // DEPRECATED
-  // path: string // DEPRECATED 'contracts/Finance.sol'
-  // environments: AragonEnvironments // DEPRECATED
 }
 
-export interface AragonAppJson {
-  roles: Role[]
-  environments: AragonEnvironments
-  path: string
-  dependencies?: {
-    appName: string // 'vault.aragonpm.eth'
-    version: string // '^4.0.0'
-    initParam: string // '_vault'
-    state: string // 'vault'
-    requiredPermissions: {
-      name: string // 'TRANSFER_ROLE'
-      params: string // '*'
-    }[]
-  }[]
-  /**
-   * If the appName is different per network use environments
-   * ```ts
-   * environments: {
-   *   rinkeby: {
-   *     appName: "myapp.open.aragonpm.eth"
-   *   }
-   * }
-   * ```
-   */
-  appName?: string
-}
-
-export interface AragonEnvironments {
-  [environmentName: string]: AragonEnvironment
-}
-
-export interface AragonEnvironment {
-  network: string
-  registry?: string
-  appName?: string
-  gasPrice?: string
-  wsRPC?: string
-  appId?: string
+export interface RepoContent {
+  artifact: AragonArtifact
+  manifest: AragonManifest
+  flatCode: string
 }

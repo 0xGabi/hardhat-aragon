@@ -1,4 +1,5 @@
-import * as parser from '@solidity-parser/parser'
+import { parse, visit } from '@solidity-parser/parser'
+import { StateVariableDeclaration } from '@solidity-parser/parser/dist/ast-types'
 
 /**
  * Finds global storage variable declarations with initialized values, e.g 'int a = 1'.
@@ -6,10 +7,10 @@ import * as parser from '@solidity-parser/parser'
  * @param sourceCode Source code of the contract.
  */
 export function parseGlobalVariableAssignments(sourceCode: string): string[] {
-  const ast = parser.parse(sourceCode, {})
+  const ast = parse(sourceCode, {})
   const variables: string[] = []
-  parser.visit(ast, {
-    StateVariableDeclaration: function(node) {
+  visit(ast, {
+    StateVariableDeclaration: function (node: StateVariableDeclaration) {
       const variable = node.variables[0]
       if (
         variable.isStateVar &&
@@ -18,7 +19,7 @@ export function parseGlobalVariableAssignments(sourceCode: string): string[] {
       ) {
         variables.push(variable.name)
       }
-    }
+    },
   })
   return variables
 }

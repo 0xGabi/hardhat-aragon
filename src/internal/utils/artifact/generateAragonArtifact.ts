@@ -1,111 +1,68 @@
 import { ethers } from 'ethers'
 import { keyBy } from 'lodash'
 
-import { AragonAppJson, AragonArtifact } from '../../../types'
+import { AragonArtifact, Dependencies, Role } from '../../../types'
 import { getAppId } from '../appName'
-import { parseContractFunctions, AragonContractFunction } from '../ast'
-import { readArapp } from '../arappUtils'
-import { HardhatRuntimeEnvironment } from 'hardhat/types'
-import { FunctionFragment } from '@ethersproject/abi'
-import { HardhatPluginError } from 'hardhat/plugins'
+import { parseContractFunctions } from '../ast'
 
 const abiFallback = {
   payable: true,
   stateMutability: 'payable',
-  type: 'fallback'
+  type: 'fallback',
 }
 
-function _generateAragonArtifact(
+/**
+ * Returns aragon artifact.json from app data
+ * @param appName "finance" | "finance.aragonpm.eth"
+ * @param contractName Target contract name or path: "Finance" | "contracts/Finance.sol"
+ * @param roles
+ * @param dependencies
+ * @param abi
+ * @param flatCode Flat code of target contract plus all imports
+ */
+export function generateAragonArtifact(
   appName: string,
+  contractName: string,
+  roles: Role[],
+  dependencies: Dependencies[],
   abi: ethers.utils.Fragment[],
-  functions: AragonContractFunction[]
+  flatCode: string
 ): AragonArtifact {
-  const abiFunctions = new ethers.utils.Interface(abi).functions
   const abiBySignature = keyBy(
-    abiFunctions,
-    (functionFragment: FunctionFragment) => functionFragment.format('sighash')
+    new ethers.utils.Interface(abi).functions,
+    (functionFragment: ethers.utils.FunctionFragment) =>
+      functionFragment.format()
   )
-  const arapp: AragonAppJson = readArapp()
+  const contractFunctions = parseContractFunctions(flatCode, contractName, {
+    onlyTargetContract: true,
+  })
 
   return {
-    ...arapp,
-
     // Artifact appears to require the abi of each function
-    functions: functions.map(parsedFn => ({
-      roles: parsedFn.roles.map(role => role.id),
+    functions: contractFunctions.map((parsedFn) => ({
+      roles: parsedFn.roles.map((role) => role.id),
       notice: parsedFn.notice,
       abi:
         abiBySignature[parsedFn.sig] ||
-        (parsedFn.sig === 'fallback' ? abiFallback : null),
-      // #### Todo: Is the signature actually necessary?
-      // > Will keep them for know just in case, they are found in current release
-      sig: parsedFn.sig
+        (parsedFn.sig === 'fallback()' ? abiFallback : null),
+      sig: parsedFn.sig,
     })),
 
     deprecatedFunctions: {},
 
     // Artifact appears to require the roleId to have bytes precomputed
-    roles: (arapp.roles || []).map(role => ({
+    roles: roles.map((role) => ({
       ...role,
-      bytes: ethers.utils.keccak256(role.id)
+      bytes: ethers.utils.id(role.id),
     })),
 
+    dependencies,
+
     abi,
+
     // Additional metadata
     flattenedCode: './code.sol',
     appName,
-    appId: getAppId(appName)
-  }
-}
-
-// Function Overloading logic
-
-/**
- * Returns aragon artifact.json from app data
- * @param appName
- * @param abi
- * @param functions Parsed contract function info
- */
-export function generateAragonArtifact(
-  appName: string,
-  abi: ethers.utils.Fragment[],
-  functions: AragonContractFunction[]
-): AragonArtifact
-
-/**
- * Returns aragon artifact.json from app data
- * @param appName "finance" | "finance.aragonpm.eth"
- * @param abi
- * @param flatCode Flat code of target contract plus all imports
- * @param contractName Target contract name or path: "Finance" | "contracts/Finance.sol"
- */
-export function generateAragonArtifact(
-  appName: string,
-  abi: ethers.utils.Fragment[],
-  flatCode: string,
-  contractName: string,
-  hre: HardhatRuntimeEnvironment
-): AragonArtifact
-
-export function generateAragonArtifact(
-  appName: string,
-  abi: ethers.utils.Fragment[],
-  functionsOrSourceCode: AragonContractFunction[] | string,
-  contractName?: string
-): AragonArtifact {
-  if (typeof functionsOrSourceCode === 'string') {
-    if (!contractName)
-      throw new HardhatPluginError('contractName must be defined')
-    const functions = parseContractFunctions(
-      functionsOrSourceCode,
-      contractName
-    )
-    return _generateAragonArtifact(appName, abi, functions)
-  } else if (Array.isArray(functionsOrSourceCode)) {
-    return _generateAragonArtifact(appName, abi, functionsOrSourceCode)
-  } else {
-    throw new HardhatPluginError(
-      'Parameter functionsOrSourceCode must be of type AragonContractFunction[] | string'
-    )
+    appId: getAppId(appName),
   }
 }

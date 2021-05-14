@@ -1,6 +1,6 @@
 import fetch from 'node-fetch'
 
-import { AragonManifest, AragonArtifact } from '../../../types'
+import { AragonManifest, AragonArtifact, RepoContent } from '../../../types'
 import { urlJoin } from '../url'
 import { contentUriToFetchUrl, toUtf8IfHex } from './utils'
 
@@ -13,15 +13,16 @@ import { contentUriToFetchUrl, toUtf8IfHex } from './utils'
 export async function resolveRepoContentUri(
   contentUri: string,
   options?: { ipfsGateway?: string }
-): Promise<{ artifact: AragonArtifact; manifest: AragonManifest }> {
+): Promise<RepoContent> {
   const url = contentUriToFetchUrl(toUtf8IfHex(contentUri), options)
 
-  const [manifest, artifact] = await Promise.all([
+  const [manifest, artifact, flatCode] = await Promise.all([
     _fetchJson<AragonManifest>(urlJoin(url, 'manifest.json')),
-    _fetchJson<AragonArtifact>(urlJoin(url, 'artifact.json'))
+    _fetchJson<AragonArtifact>(urlJoin(url, 'artifact.json')),
+    _fetchText(urlJoin(url, 'code.sol')),
   ])
 
-  return { manifest, artifact }
+  return { manifest, artifact, flatCode }
 }
 
 /**
@@ -45,9 +46,9 @@ export async function resolveRepoContentUriFile(
  * @param url
  */
 async function _fetchJson<T>(url: string): Promise<T> {
-  return fetch(url).then(res => res.json())
+  return fetch(url).then((res) => res.json())
 }
 
 async function _fetchText(url: string): Promise<string> {
-  return fetch(url).then(res => res.text())
+  return fetch(url).then((res) => res.text())
 }

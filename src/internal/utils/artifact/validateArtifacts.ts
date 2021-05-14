@@ -4,7 +4,7 @@ import { HardhatPluginError } from 'hardhat/plugins'
 import {
   ARTIFACT_NAME,
   FLAT_CODE_NAME,
-  MANIFEST_NAME
+  MANIFEST_NAME,
 } from '../../../constants'
 import { AragonArtifact, AragonManifest } from '../../../types'
 import { parseContractFunctions } from '../ast'
@@ -20,13 +20,14 @@ import { matchContractRoles } from './matchContractRoles'
  */
 export function validateArtifacts(
   distPath: string,
+  appContractName: string,
   hasFrontend: boolean
 ): void {
   // Load files straight from the dist directory
   const artifact = readJson<AragonArtifact>(path.join(distPath, ARTIFACT_NAME))
   const manifest = readJson<AragonManifest>(path.join(distPath, MANIFEST_NAME))
   const flatCode = readFile(path.join(distPath, FLAT_CODE_NAME))
-  const functions = parseContractFunctions(flatCode, artifact.path)
+  const functions = parseContractFunctions(flatCode, appContractName)
 
   // Make sure all declared files in the manifest are there
   const missingFiles = findMissingManifestFiles(manifest, distPath, hasFrontend)
@@ -34,7 +35,7 @@ export function validateArtifacts(
     throw new HardhatPluginError(
       `
 Some files declared in manifest.json are not found in dist dir: ${distPath}
-${missingFiles.map(file => ` - ${file.id}: ${file.path}`).join('\n')}
+${missingFiles.map((file) => ` - ${file.id}: ${file.path}`).join('\n')}
       
 Make sure your app build process includes them in the dist directory on
 every run of the designated NPM build script.
@@ -49,7 +50,7 @@ If you are sure you want to publish anyway, use the flag "--skip-validation".
     throw new HardhatPluginError(
       `
 Some contract roles do not match declared roles in arapp.json:
-${roleMatchErrors.map(err => ` - ${err.id}: ${err.message}`).join('\n')}
+${roleMatchErrors.map((err) => ` - ${err.id}: ${err.message}`).join('\n')}
 
 If you are sure you want to publish anyway, use the flag "--skip-validation".
 `

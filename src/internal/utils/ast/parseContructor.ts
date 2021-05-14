@@ -1,4 +1,5 @@
-import * as parser from '@solidity-parser/parser'
+import { parse, visit } from '@solidity-parser/parser'
+import { FunctionDefinition } from '@solidity-parser/parser/dist/ast-types'
 
 /**
  * Returns true if a contract has a constructor, otherwise false.
@@ -6,14 +7,14 @@ import * as parser from '@solidity-parser/parser'
  * @param sourceCode Source code of the contract.
  */
 export function hasConstructor(sourceCode: string): boolean {
-  const ast = parser.parse(sourceCode, {})
+  const ast = parse(sourceCode, {})
   let foundConstructor = false
 
-  parser.visit(ast, {
-    FunctionDefinition: function(node) {
+  visit(ast, {
+    FunctionDefinition: function (node: FunctionDefinition) {
       if (!node.isConstructor) return
       foundConstructor = true
-    }
+    },
   })
 
   return foundConstructor

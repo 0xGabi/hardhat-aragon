@@ -49,7 +49,7 @@ export async function publishVersion(
     return {
       to: repoAddress,
       methodName: 'newVersion',
-      params: [versionArray, contractAddress, contentUri]
+      params: [versionArray, contractAddress, contentUri],
     }
   } else {
     // If the repo does not exist yet, create a repo with the first version
@@ -69,8 +69,8 @@ export async function publishVersion(
         managerAddress,
         versionArray,
         contractAddress,
-        contentUri
-      ]
+        contentUri,
+      ],
     }
   }
 }
@@ -96,7 +96,7 @@ export async function publishVersionIntent(
     proxyAddress: to,
     methodName,
     params,
-    targetContract: to
+    targetContract: to,
   }
 }
 
@@ -105,7 +105,7 @@ export async function publishVersionIntent(
  */
 export function encodePublishVersionTxData({
   methodName,
-  params
+  params,
 }: {
   methodName: 'newVersion' | 'newRepoWithVersion'
   params: any[]
