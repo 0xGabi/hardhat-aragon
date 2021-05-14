@@ -36,7 +36,6 @@ export interface Role {
 export interface AragonConfig {
   appEnsName: string
   appContractName: string
-  appContractConstructorArgs: any[]
   appRoles: Role[]
   appDependencies: Dependencies[]
   appSrcPath: string
@@ -48,7 +47,6 @@ export interface AragonConfig {
 export interface AragonUserConfig {
   appEnsName: string
   appContractName: string
-  appContractConstructorArgs?: any[]
   appRoles?: Role[]
   appDependencies?: Dependencies[]
   appSrcPath?: string
