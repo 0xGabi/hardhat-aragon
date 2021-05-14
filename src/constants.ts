@@ -1,4 +1,3 @@
-// export const DEFAULT_IPFS_API_ENDPOINT = 'https://api.thegraph.com/ipfs/'
 export const DEFAULT_IPFS_API_ENDPOINT = 'http://localhost:5001/'
 export const DEFAULT_IPFS_GATEWAY = 'https://ipfs.io/'
 

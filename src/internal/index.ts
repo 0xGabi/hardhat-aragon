@@ -58,8 +58,6 @@ extendConfig(
     config.aragon = {
       appEnsName: userConfig.aragon.appEnsName,
       appContractName: userConfig.aragon.appContractName,
-      appContractConstructorArgs:
-        userConfig.aragon.appContractConstructorArgs ?? [],
       appRoles: userConfig.aragon.appRoles ?? [],
       appDependencies: userConfig.aragon.appDependencies ?? [],
       appSrcPath: path.normalize(
@@ -121,6 +119,11 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
     undefined,
     types.string
   )
+  .addOptionalVariadicPositionalParam(
+    'constructorArgs',
+    'Constructor arguments for the app contract.',
+    []
+  )
   .addFlag(
     'onlyContent',
     'Prevents contract compilation, deployment, and artifact generation.'
@@ -138,7 +141,6 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
       const {
         appEnsName,
         appContractName,
-        appContractConstructorArgs,
         appSrcPath,
         appBuildOutputPath,
         appBuildScript,
@@ -149,8 +151,10 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
       // for apps that were deployed to diferent repo names
       const finalAppEnsName = hre.network.config.appEnsName ?? appEnsName
 
+      hre.config.networks.localhost
+
       // Mutate provider with new ENS address
-      if (hre.network.config.ensRegistry) {
+      if (hre.network.config.ensRegistry && hre.ethers.provider.network) {
         hre.ethers.provider.network.ensAddress = hre.network.config.ensRegistry
       }
       const provider = hre.ethers.provider
@@ -185,7 +189,7 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
         log('Deploying new implementation contract')
         const deployment = await hre.deployments.deploy(appContractName, {
           from: owner.address,
-          args: appContractConstructorArgs,
+          args: args.constructorArgs,
           log: true,
           deterministicDeployment: true,
         })
