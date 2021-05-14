@@ -10,7 +10,7 @@
       "name": "hardhat",
       "skipFiles": ["<node_internals>/**"],
       "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/hardhat",
-      "args": ["publish", "major"],
+      "args": ["publish", "--network", "localhost", "major"],
       "cwd": "${workspaceFolder}/test/fixture-project/hardhat-project"
     }
   ]

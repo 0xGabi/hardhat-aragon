@@ -3,8 +3,9 @@ import fetch from 'node-fetch'
 import { DEFAULT_PINATA_API_ENDPOINT } from '../../../constants'
 import { PinataConfig } from '../../../types'
 import { log } from '../../ui/logger'
+import { urlJoin } from '../url'
 
-const PIN_BY_HASH_API = 'pinning/pinByHash'
+const PIN_BY_HASH_API = 'pinByHash'
 
 export async function pinContent({
   contentHash,
@@ -17,7 +18,7 @@ export async function pinContent({
   network: string
   pinata: PinataConfig
 }): Promise<any | undefined> {
-  const url = DEFAULT_PINATA_API_ENDPOINT + PIN_BY_HASH_API
+  const url = urlJoin(DEFAULT_PINATA_API_ENDPOINT, 'pinning', PIN_BY_HASH_API)
   const body = {
     hashToPin: contentHash,
     pinataMetadata: {
