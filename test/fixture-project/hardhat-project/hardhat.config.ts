@@ -9,7 +9,7 @@ const config: HardhatUserConfig = {
   solidity: '0.4.24',
   defaultNetwork: 'hardhat',
   aragon: {
-    appEnsName: 'counter333.open.aragonpm.eth',
+    appEnsName: 'counter.open.aragonpm.eth',
     appContractName: 'Counter',
     appRoles: [
       {
@@ -26,9 +26,8 @@ const config: HardhatUserConfig = {
   },
   ipfs: {
     pinata: {
-      key: 'bb35e98d2d039a6b518d',
-      secret:
-        '4b10c468ae70d42b239d08ddddc7de08c07fb515f20a7650303d5156afd7b71c',
+      key: process.env.PINATA_KEY || '',
+      secret: process.env.PINATA_SECRET_KEY || '',
     },
   },
   networks: {
