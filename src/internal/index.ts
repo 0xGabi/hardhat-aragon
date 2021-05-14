@@ -151,13 +151,24 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
       // for apps that were deployed to diferent repo names
       const finalAppEnsName = hre.network.config.appEnsName ?? appEnsName
 
-      hre.config.networks.localhost
-
-      // Mutate provider with new ENS address
-      if (hre.network.config.ensRegistry && hre.ethers.provider.network) {
-        hre.ethers.provider.network.ensAddress = hre.network.config.ensRegistry
+      let provider
+      if (hre.network.name === 'localhost') {
+        provider = new hre.ethers.providers.JsonRpcProvider(
+          hre.config.networks.localhost.url,
+          {
+            name: 'localhost',
+            ensAddress: hre.network.config.ensRegistry,
+            chainId: 31337,
+          }
+        )
+      } else {
+        // Mutate provider with new ENS address
+        if (hre.network.config.ensRegistry) {
+          hre.ethers.provider.network.ensAddress =
+            hre.network.config.ensRegistry
+        }
+        provider = hre.ethers.provider
       }
-      const provider = hre.ethers.provider
 
       const prevVersion = await _getLastestVersionIfExists(
         finalAppEnsName,
@@ -244,7 +255,7 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
 
       await assertUploadContetResolve(contentHash, hre.config.ipfs.gateway)
 
-      if (hre.config.ipfs.pinata) {
+      if (hre.config.ipfs.pinata && hre.config.ipfs.pinata.key !== '') {
         log('Pinning content to pinata...')
         const response = await pinContent({
           contentHash,

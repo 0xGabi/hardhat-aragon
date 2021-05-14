@@ -38,6 +38,9 @@ const config: HardhatUserConfig = {
       },
       ensRegistry: '0xaafca6b0c89521752e559650206d7c925fd0e530',
     },
+    localhost: {
+      ensRegistry: '0xaafca6b0c89521752e559650206d7c925fd0e530',
+    },
   },
 }
 
