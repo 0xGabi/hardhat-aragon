@@ -3,11 +3,7 @@ import path from 'path'
 import { providers } from 'ethers'
 import { extendConfig, extendEnvironment, task } from 'hardhat/config'
 import { HardhatPluginError, lazyObject } from 'hardhat/plugins'
-import {
-  HardhatConfig,
-  HardhatRuntimeEnvironment,
-  HardhatUserConfig,
-} from 'hardhat/types'
+import { HardhatConfig, HardhatUserConfig } from 'hardhat/types'
 import * as types from 'hardhat/internal/core/params/argumentTypes'
 
 import {
@@ -20,7 +16,7 @@ import {
   EXPLORER_CHAIN_URLS,
 } from '../constants'
 import { RepoContent } from '../types'
-import { TASK_PUBLISH, TASK_COMPILE } from './task-names'
+import { TASK_PUBLISH } from './task-names'
 
 import { log } from './ui/logger'
 import * as apm from './utils/apm'
@@ -45,6 +41,7 @@ import {
 } from './utils/ipfs'
 
 import '@nomiclabs/hardhat-ethers'
+import 'hardhat-deploy'
 
 // This import is needed to let the TypeScript compiler know that it should include your type
 // extensions in your npm package's types file.
@@ -61,6 +58,8 @@ extendConfig(
     config.aragon = {
       appEnsName: userConfig.aragon.appEnsName,
       appContractName: userConfig.aragon.appContractName,
+      appContractConstructorArgs:
+        userConfig.aragon.appContractConstructorArgs ?? [],
       appRoles: userConfig.aragon.appRoles ?? [],
       appDependencies: userConfig.aragon.appDependencies ?? [],
       appSrcPath: path.normalize(
@@ -139,14 +138,16 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
       const {
         appEnsName,
         appContractName,
+        appContractConstructorArgs,
         appSrcPath,
         appBuildOutputPath,
         appBuildScript,
         ignoreFilesPath,
       } = hre.config.aragon
 
+      // Prefer to use the appEnsName configured per network relevant
+      // for apps that were deployed to diferent repo names
       const finalAppEnsName = hre.network.config.appEnsName ?? appEnsName
-      const contractName = appContractName
 
       // Mutate provider with new ENS address
       if (hre.network.config.ensRegistry) {
@@ -182,7 +183,13 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
         log(`Using provided contract address: ${contractAddress}`)
       } else if (!prevVersion || bump === 'major') {
         log('Deploying new implementation contract')
-        contractAddress = await _deployMainContract(contractName, hre)
+        const deployment = await hre.deployments.deploy(appContractName, {
+          from: owner.address,
+          args: appContractConstructorArgs,
+          log: true,
+          deterministicDeployment: true,
+        })
+        contractAddress = deployment.address
         log(`New implementation contract address: ${contractAddress}`)
       } else {
         contractAddress = prevVersion.contractAddress
@@ -192,7 +199,9 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
       if (!args.skipAppBuild && pathExists(appSrcPath)) {
         log(`Running app build script`)
         try {
-          await execa('npm', ['run', appBuildScript], { cwd: appSrcPath })
+          await execa('npm', ['run', appBuildScript], {
+            cwd: appSrcPath,
+          })
         } catch (e) {
           throw new HardhatPluginError(
             `Make sure the app dependencies were installed`
@@ -257,7 +266,9 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
         finalAppEnsName,
         versionInfo,
         provider,
-        { managerAddress: owner.address }
+        {
+          managerAddress: owner.address,
+        }
       )
 
       const activeIpfsGateway = await guessGatewayUrl({
@@ -328,23 +339,4 @@ async function _getLastestVersionIfExists(
   } catch (e) {
     throw e
   }
-}
-
-/**
- * Deploys a new implementation contract and returns its address
- * @param contractName
- * @param verify
- * @param hre
- */
-async function _deployMainContract(
-  contractName: string,
-  hre: HardhatRuntimeEnvironment
-): Promise<string> {
-  // Compile contracts
-  await hre.run(TASK_COMPILE)
-  // Deploy contract
-  const factory = await hre.ethers.getContractFactory(contractName)
-  const mainContract = await factory.deploy()
-  log('Implementation contract deployed')
-  return mainContract.address
 }
