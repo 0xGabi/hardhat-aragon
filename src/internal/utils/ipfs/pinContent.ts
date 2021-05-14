@@ -16,7 +16,7 @@ export async function pinContent({
   appEnsName: string
   network: string
   pinata: PinataConfig
-}): Promise<any> {
+}): Promise<any | undefined> {
   const url = DEFAULT_PINATA_API_ENDPOINT + PIN_BY_HASH_API
   const body = {
     hashToPin: contentHash,
@@ -40,6 +40,6 @@ export async function pinContent({
     return data
   } catch (error) {
     log(`Warning: Error while fetching pinata API with ${error}`)
-    return
+    return undefined
   }
 }

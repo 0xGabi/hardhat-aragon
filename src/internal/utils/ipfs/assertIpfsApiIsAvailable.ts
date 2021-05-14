@@ -1,14 +1,18 @@
-import { resolveRepoContentUri } from '../apm'
+import { HardhatPluginError } from 'hardhat/plugins'
 
-export async function assertUploadContetResolve(
-  contentHash: string,
-  gateway: string
+/**
+ * Sanity check to check if an IPFS API is active
+ * Note: It requires the API to /api/v0/version route available
+ */
+export async function assertIpfsApiIsAvailable(
+  ipfs: any,
+  url: string
 ): Promise<void> {
   try {
-    await resolveRepoContentUri(`ipfs:${contentHash}`, {
-      ipfsGateway: gateway,
-    })
-  } catch {
-    return
+    await ipfs.version()
+  } catch (e) {
+    throw new HardhatPluginError(
+      `IPFS API at ${url} is not available. Error: ${e}`
+    )
   }
 }

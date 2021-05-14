@@ -233,13 +233,17 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
 
       if (hre.config.ipfs.pinata) {
         log('Pinning content to pinata...')
-        const responseData = await pinContent({
+        const response = await pinContent({
           contentHash,
           appEnsName: finalAppEnsName,
           network: hre.network.name,
           pinata: hre.config.ipfs.pinata,
         })
-        log(`Content pinned to pinata: ${responseData}`)
+        if (response)
+          log(`Content pinned:
+    id: ${response.id}
+    status: ${response.status}
+    name: ${response.name}`)
       }
 
       // Generate tx to publish new app to aragonPM
