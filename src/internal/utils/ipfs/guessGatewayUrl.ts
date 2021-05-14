@@ -16,7 +16,7 @@ import { urlJoin, parseUrlSafe } from '../url'
 export async function guessGatewayUrl({
   ipfsApiUrl,
   contentHash,
-  ipfsGateway
+  ipfsGateway,
 }: {
   ipfsApiUrl: string
   contentHash: string
@@ -25,7 +25,7 @@ export async function guessGatewayUrl({
   const urls = getPossibleGatewayUrls({ ipfsApiUrl, ipfsGateway })
   try {
     return await oneSuccess<string>(
-      urls.map(async url => {
+      urls.map(async (url) => {
         const testUrl = urlJoin(url, 'ipfs', contentHash)
         const res = await fetch(testUrl, { timeout: 3000 })
         // node-fetch does not throw on error status codes
@@ -55,7 +55,7 @@ export async function guessGatewayUrl({
  */
 export function getPossibleGatewayUrls({
   ipfsApiUrl,
-  ipfsGateway
+  ipfsGateway,
 }: {
   ipfsApiUrl: string
   ipfsGateway?: string
@@ -81,19 +81,19 @@ export function getPossibleGatewayUrls({
  */
 function oneSuccess<T>(promises: Promise<T>[]): Promise<T> {
   return Promise.all(
-    promises.map(async p => {
+    promises.map(async (p) => {
       // If a request fails, count that as a resolution so it will keep
       // waiting for other possible successes. If a request succeeds,
       // treat it as a rejection so Promise.all immediately bails out.
       return p.then(
-        val => Promise.reject(val),
-        err => Promise.resolve(err)
+        (val) => Promise.reject(val),
+        (err) => Promise.resolve(err)
       )
     })
   ).then(
     // If '.all' resolved, we've just got an array of errors.
-    errors => Promise.reject(errors),
+    (errors) => Promise.reject(errors),
     // If '.all' rejected, we've got the result we wanted.
-    val => Promise.resolve(val)
+    (val) => Promise.resolve(val)
   )
 }

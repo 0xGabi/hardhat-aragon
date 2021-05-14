@@ -5,6 +5,6 @@ import { ethers } from 'ethers'
  * @param sig
  */
 export function coerceFunctionSignature(sig: string): string {
-  const int = new ethers.utils.Interface([sig])
-  return int.functions[0].format('full')
+  const int = new ethers.utils.Interface(sig)
+  return int.format()
 }

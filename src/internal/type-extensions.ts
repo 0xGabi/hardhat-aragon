@@ -8,7 +8,7 @@ import {
   AragonConfig,
   AragonUserConfig,
   IpfsConfig,
-  IpfsUserConfig
+  IpfsUserConfig,
 } from '../types'
 
 declare module 'hardhat/types/config' {

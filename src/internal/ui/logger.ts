@@ -1,8 +1,6 @@
 import chalk, { ForegroundColor } from 'chalk'
 
-const mainTag = chalk.gray('main     | ')
-const frontTag = chalk.yellow('frontend | ')
-const backTag = chalk.blue('backend  | ')
+const publishTag = chalk.gray('publish     | ')
 
 export function _prependTag(
   lines: string,
@@ -12,24 +10,11 @@ export function _prependTag(
   if (color) tag = chalk[color](tag)
   return lines
     .split('\n')
-    .map(line => tag + line)
+    .map((line) => tag + line)
     .join('\n')
 }
 
-export function logMain(data: string): void {
+export function log(data: string): void {
   // eslint-disable-next-line no-console
-  console.log(_prependTag(data, mainTag))
+  console.log(_prependTag(data, publishTag))
 }
-
-export function logFront(data: string): void {
-  // eslint-disable-next-line no-console
-  console.log(_prependTag(data, frontTag))
-}
-
-export function logBack(data: string): void {
-  // eslint-disable-next-line no-console
-  console.log(_prependTag(data, backTag))
-}
-
-export const logHook = (tag: string) => (data: string): void =>
-  logBack(_prependTag(data, `${tag} | `, 'blueBright'))

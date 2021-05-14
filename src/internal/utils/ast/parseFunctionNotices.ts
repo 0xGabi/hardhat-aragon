@@ -7,7 +7,7 @@ const SOLIDITY_TYPES = {
   ufixed: 'ufixed128x18',
   fixed: 'fixed128x18',
   bool: 'bool',
-  string: 'string'
+  string: 'string',
 }
 
 // In the all functions that accept the parameter `declaration` it referes
@@ -34,7 +34,7 @@ const modifiesStateAndIsPublic = (declaration: string): boolean =>
  * @return "address"
  */
 const typeOrAddress = (type: string): string =>
-  Object.keys(SOLIDITY_TYPES).some(t => type.startsWith(t)) ? type : 'address'
+  Object.keys(SOLIDITY_TYPES).some((t) => type.startsWith(t)) ? type : 'address'
 
 /**
  * Expand shorthands into their full types for calculating function signatures
@@ -66,9 +66,9 @@ function getSignature(declaration: string): string {
       .replace(/\n/gm, '')
       .replace(/\t/gm, '')
       .split(',')
-      .map(param => param.split(' ').filter(s => s.length > 0)[0])
-      .map(type => typeOrAddress(type))
-      .map(type => expandTypeForSignature(type))
+      .map((param) => param.split(' ').filter((s) => s.length > 0)[0])
+      .map((type) => typeOrAddress(type))
+      .map((type) => expandTypeForSignature(type))
       .join(',')
 
     return `${name}(${parsedParams})`
@@ -93,7 +93,7 @@ function getNotice(declaration: string): string {
     .replace(/\n/gm, '')
     .replace(/\t/gm, '')
     .split(' ')
-    .filter(x => x.length > 0)
+    .filter((x) => x.length > 0)
     .join(' ')
 }
 
@@ -123,11 +123,11 @@ export function parseFunctionsNotices(
     sourceCode.match(/(@notice|^\s*function)(?:[^]*?){/gm) || []
 
   return functionDeclarations
-    .filter(functionDeclaration =>
+    .filter((functionDeclaration) =>
       modifiesStateAndIsPublic(functionDeclaration)
     )
-    .map(functionDeclaration => ({
+    .map((functionDeclaration) => ({
       signature: getSignature(functionDeclaration),
-      notice: getNotice(functionDeclaration)
+      notice: getNotice(functionDeclaration),
     }))
 }

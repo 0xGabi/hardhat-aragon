@@ -1,11 +1,16 @@
 import { keyBy } from 'lodash'
 import path from 'path'
-import * as parser from '@solidity-parser/parser'
+import { visit, parse } from '@solidity-parser/parser'
+import { HardhatPluginError } from 'hardhat/plugins'
+import {
+  ContractDefinition,
+  FunctionDefinition,
+  ModifierInvocation,
+  VariableDeclaration,
+} from '@solidity-parser/parser/dist/ast-types'
 
 import { parseFunctionsNotices } from './parseFunctionNotices'
 import { AragonContractFunction } from './types'
-import { coerceFunctionSignature } from './utils'
-import { HardhatPluginError } from 'hardhat/plugins'
 
 /**
  * Helper to parse the role name from a modifier node
@@ -33,7 +38,7 @@ function parseRoleIdFromNode(node: ModifierInvocation): string {
  * @param node
  */
 function parseRoleParamCountFromNode(
-  node: parser.ModifierInvocation,
+  node: ModifierInvocation,
   authHelperFunctions: Set<string>
 ): number {
   const [, paramsArg] = node.arguments || []
@@ -57,15 +62,13 @@ function parseRoleParamCountFromNode(
  * it ABI, as it's necessary for artifact.json's .functions property
  * @param node
  */
-function parseFunctionSignatureFromNode(
-  node: parser.FunctionDefinition
-): string {
+function parseFunctionSignatureFromNode(node: FunctionDefinition): string {
   const paramTypes = node.parameters.map(
     /**
      * Helper to parse the paramType of an argument to guess the signature
      * Using an isolated function to use a switch / return structure
      */
-    (nodeParam: parser.VariableDeclaration): string => {
+    (nodeParam: VariableDeclaration): string => {
       switch (nodeParam.typeName.type) {
         case 'ElementaryTypeName':
           return nodeParam.typeName.name
@@ -73,9 +76,9 @@ function parseFunctionSignatureFromNode(
           // eslint-disable-next-line no-case-declarations
           const { baseTypeName, length } = nodeParam.typeName
           if (baseTypeName.type === 'ElementaryTypeName') {
-            if (length && length.type === 'NumberLiteral') {
+            if (length && length.type === 'IndexAccess') {
               // Known length uint[3]
-              return `${baseTypeName.name}[${length.number}]`
+              return `${baseTypeName.name}[${length.index}]`
             } else if (!length) {
               // Unknown length uint[]
               return `${baseTypeName.name}[]`
@@ -91,9 +94,7 @@ function parseFunctionSignatureFromNode(
     }
   )
   // Don't return "fallback()" for the fallback function
-  return node.name
-    ? coerceFunctionSignature(`${node.name}(${paramTypes.join(',')})`)
-    : 'fallback'
+  return node.name ? `${node.name}(${paramTypes.join(',')})` : 'fallback()'
 }
 
 /**
@@ -121,15 +122,15 @@ export function parseContractFunctions(
   const { onlyTargetContract } = options || {}
 
   const targetContractName = path.parse(targetContract).name
-  const ast = parser.parse(sourceCode, {})
+  const ast = parse(sourceCode, {})
   const functions: AragonContractFunction[] = []
   const authHelperFunctions: Set<string> = new Set()
   const parsedContract: Set<string> = new Set()
 
   // Aggregate valid auth helper functions first to help count
   // the role params in a safer and more flexible way
-  parser.visit(ast, {
-    FunctionDefinition: node => {
+  visit(ast, {
+    FunctionDefinition: (node: FunctionDefinition) => {
       if (
         node.name &&
         node.visibility === 'internal' &&
@@ -145,7 +146,7 @@ export function parseContractFunctions(
         )
           authHelperFunctions.add(node.name)
       }
-    }
+    },
   })
 
   // Parse contract definitions in the first ast node which should be a SourceUnit
@@ -154,11 +155,11 @@ export function parseContractFunctions(
       'First block is not of expected type SourceUnit'
     )
   // Aggregate all contracts for recursively parsing bases below
-  const contracts: parser.ContractDefinition[] = ast.children.filter(
-    node => node.type === 'ContractDefinition' && node.kind === 'contract'
+  const contracts: ContractDefinition[] = ast.children.filter(
+    (node) => node.type === 'ContractDefinition' && node.kind === 'contract'
   ) as any
 
-  function parseContract(node: parser.ContractDefinition): void {
+  function parseContract(node: ContractDefinition): void {
     // Parse functions
     for (const subNode of node.subNodes) {
       if (
@@ -180,14 +181,14 @@ export function parseContractFunctions(
           sig: parseFunctionSignatureFromNode(subNode),
           // Parse the auth modifiers
           roles: subNode.modifiers
-            .filter(modNode => ['auth', 'authP'].includes(modNode.name))
-            .map(authModNode => ({
+            .filter((modNode) => ['auth', 'authP'].includes(modNode.name))
+            .map((authModNode) => ({
               id: parseRoleIdFromNode(authModNode),
               paramCount: parseRoleParamCountFromNode(
                 authModNode,
                 authHelperFunctions
-              )
-            }))
+              ),
+            })),
         })
       }
     }
@@ -198,7 +199,7 @@ export function parseContractFunctions(
       // Protect against infinite loops with a Set
       if (baseName && !parsedContract.has(baseName)) {
         parsedContract.add(node.name)
-        const contract = contracts.find(node => node.name === baseName)
+        const contract = contracts.find((node) => node.name === baseName)
         if (contract && !onlyTargetContract) parseContract(contract)
       }
     }
@@ -209,7 +210,7 @@ export function parseContractFunctions(
   // flatten source should be the target contract
   parseContract(
     (targetContractName &&
-      contracts.find(node => node.name === targetContractName)) ||
+      contracts.find((node) => node.name === targetContractName)) ||
       contracts[contracts.length - 1]
   )
 
@@ -218,7 +219,7 @@ export function parseContractFunctions(
   // Functions are mapped with each other on a best effort using their
   // guessed signature, which may be wrong if complex syntax is used
   const notices = parseFunctionsNotices(sourceCode)
-  const noticesBySignature = keyBy(notices, n => n.signature)
+  const noticesBySignature = keyBy(notices, (n) => n.signature)
   for (const fn of functions)
     if (!fn.notice) {
       const extractedNotice = (noticesBySignature[fn.sig] || {}).notice

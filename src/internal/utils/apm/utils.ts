@@ -22,7 +22,7 @@ export function parseApmVersionReturn(res: ApmVersionReturn): ApmVersion {
     contractAddress: res.contractAddress,
     // toUtf8String(, true) to ignore UTF8 errors parsing and let downstream
     // components identify faulty content URIs
-    contentUri: ethers.utils.toUtf8String(res.contentURI)
+    contentUri: ethers.utils.toUtf8String(res.contentURI),
   }
 }
 

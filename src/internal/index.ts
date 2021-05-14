@@ -6,7 +6,7 @@ import { HardhatPluginError, lazyObject } from 'hardhat/plugins'
 import {
   HardhatConfig,
   HardhatRuntimeEnvironment,
-  HardhatUserConfig
+  HardhatUserConfig,
 } from 'hardhat/types'
 import * as types from 'hardhat/internal/core/params/argumentTypes'
 
@@ -17,24 +17,31 @@ import {
   DEFAULT_IPFS_API_ENDPOINT,
   DEFAULT_IPFS_GATEWAY,
   DEFAULT_APP_BUILD_SCRIPT,
-  EXPLORER_CHAIN_URLS
+  EXPLORER_CHAIN_URLS,
 } from '../constants'
+import { RepoContent } from '../types'
 import { TASK_PUBLISH, TASK_COMPILE } from './task-names'
 
-import { logMain } from './ui/logger'
+import { log } from './ui/logger'
 import * as apm from './utils/apm'
-import { generateArtifacts, validateArtifacts } from './utils/artifact'
+import { pinContent } from './utils/ipfs/pinContent'
+import {
+  generateArtifacts,
+  validateArtifacts,
+  writeArtifacts,
+} from './utils/artifact'
 import createIgnorePatternFromFiles from './utils/createIgnorePatternFromFiles'
 import parseAndValidateBumpOrVersion from './utils/parseAndValidateBumpOrVersion'
 import {
   getPrettyPublishTxPreview,
-  getPublishTxOutput
+  getPublishTxOutput,
 } from './utils/prettyOutput'
 import { pathExists } from './utils/fsUtils'
 import {
   uploadDirToIpfs,
   assertIpfsApiIsAvailable,
-  guessGatewayUrl
+  guessGatewayUrl,
+  assertUploadContetResolve,
 } from './utils/ipfs'
 
 import '@nomiclabs/hardhat-ethers'
@@ -42,19 +49,20 @@ import '@nomiclabs/hardhat-ethers'
 // This import is needed to let the TypeScript compiler know that it should include your type
 // extensions in your npm package's types file.
 import './type-extensions'
-import { pinContentToIpfs } from './utils/ipfs/pinContentToIpfs'
 
 extendConfig(
   (config: HardhatConfig, userConfig: Readonly<HardhatUserConfig>) => {
     config.ipfs = {
       url: userConfig.ipfs?.url ?? DEFAULT_IPFS_API_ENDPOINT,
       gateway: userConfig.ipfs?.gateway ?? DEFAULT_IPFS_GATEWAY,
-      pinning: userConfig.ipfs?.pinning
+      pinata: userConfig.ipfs?.pinata,
     }
 
     config.aragon = {
       appEnsName: userConfig.aragon.appEnsName,
       appContractName: userConfig.aragon.appContractName,
+      appRoles: userConfig.aragon.appRoles ?? [],
+      appDependencies: userConfig.aragon.appDependencies ?? [],
       appSrcPath: path.normalize(
         path.join(
           config.paths.root,
@@ -74,12 +82,12 @@ extendConfig(
           config.paths.root,
           userConfig.aragon.ignoreFilesPath ?? DEFAULT_IGNORE_PATH
         )
-      )
+      ),
     }
   }
 )
 
-extendEnvironment(hre => {
+extendEnvironment((hre) => {
   hre.ipfs = lazyObject(() => {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { create } = require('ipfs-http-client')
@@ -96,7 +104,7 @@ The IPFS URL must be of the following format: http(s)://host[:port]/[path]`)
       protocol: url.protocol.replace(/[:]+$/, ''),
       host: url.hostname,
       port: url.port,
-      'api-path': url.pathname.replace(/\/$/, '') + '/api/v0/'
+      'api-path': url.pathname.replace(/\/$/, '') + '/api/v0/',
     })
   })
 })
@@ -118,6 +126,7 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
     'onlyContent',
     'Prevents contract compilation, deployment, and artifact generation.'
   )
+  .addFlag('skipAppBuild', 'Skip application build.')
   .addFlag('skipValidation', 'Skip validation of artifacts files.')
   .addFlag('dryRun', 'Output tx data without broadcasting')
   .setAction(
@@ -133,7 +142,7 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
         appSrcPath,
         appBuildOutputPath,
         appBuildScript,
-        ignoreFilesPath
+        ignoreFilesPath,
       } = hre.config.aragon
 
       const finalAppEnsName = hre.network.config.appEnsName ?? appEnsName
@@ -153,7 +162,7 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
         bumpOrVersion,
         prevVersion ? prevVersion.version : undefined
       )
-      logMain(`Applying version bump ${bump}, next version: ${nextVersion}`)
+      log(`Applying version bump ${bump}, next version: ${nextVersion}`)
 
       // Do sanity checks before compiling the contract or uploading files
       // So users do not have to wait a long time before seeing the config is not okay
@@ -167,60 +176,77 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
       let contractAddress: string
       if (args.onlyContent) {
         contractAddress = hre.ethers.constants.AddressZero
-        logMain('No contract used for this version')
+        log('No contract used for this version')
       } else if (existingContractAddress) {
         contractAddress = existingContractAddress
-        logMain(`Using provided contract address: ${contractAddress}`)
+        log(`Using provided contract address: ${contractAddress}`)
       } else if (!prevVersion || bump === 'major') {
-        logMain('Deploying new implementation contract')
+        log('Deploying new implementation contract')
         contractAddress = await _deployMainContract(contractName, hre)
-        logMain(`New implementation contract address: ${contractAddress}`)
+        log(`New implementation contract address: ${contractAddress}`)
       } else {
         contractAddress = prevVersion.contractAddress
-        logMain(`Reusing previous version contract address: ${contractAddress}`)
+        log(`Reusing previous version contract address: ${contractAddress}`)
       }
 
-      // if (pathExists(appSrcPath)) {
-      //   logMain(`Running app build script`)
-      //   await execa('npm', ['run', appBuildScript], { cwd: appSrcPath })
-      // }
+      if (!args.skipAppBuild && pathExists(appSrcPath)) {
+        log(`Running app build script`)
+        try {
+          await execa('npm', ['run', appBuildScript], { cwd: appSrcPath })
+        } catch (e) {
+          throw new HardhatPluginError(
+            `Make sure the app dependencies were installed`
+          )
+        }
+      }
 
-      // Generate and validate Aragon artifacts, release files
-      logMain(`Generating Aragon app artifacts`)
-      await generateArtifacts(appBuildOutputPath, hre)
-      const hasFrontend = appSrcPath ? true : false
-      if (!args.skipValidation)
-        validateArtifacts(appBuildOutputPath, hasFrontend)
+      if (!args.onlyContent) {
+        let content: RepoContent
+        if (prevVersion && bump !== 'major') {
+          log(`Resolving Aragon artifacts from Aragon Package Manager`)
+          content = await apm.resolveRepoContentUri(prevVersion.contentUri, {
+            ipfsGateway: hre.config.ipfs.gateway,
+          })
+        } else {
+          log(`Generating Aragon app artifacts`)
+          content = await generateArtifacts(hre)
+        }
+
+        writeArtifacts(appBuildOutputPath, content)
+
+        if (!args.skipValidation) {
+          const hasFrontend = appSrcPath ? true : false
+          validateArtifacts(appBuildOutputPath, appContractName, hasFrontend)
+        }
+      }
 
       // Upload release directory to IPFS
-      logMain('Uploading release assets to IPFS...')
-      const cid = await uploadDirToIpfs({
+      log('Uploading release assets to IPFS...')
+      const contentHash = await uploadDirToIpfs({
         dirPath: appBuildOutputPath,
         ipfs,
-        ignore: createIgnorePatternFromFiles(ignoreFilesPath)
+        ignore: createIgnorePatternFromFiles(ignoreFilesPath),
       })
-      const contentHash = cid.toString()
-      logMain(`Release assets uploaded to IPFS: ${contentHash}`)
+      log(`Release assets uploaded to IPFS: ${contentHash}`)
 
-      if (hre.config.ipfs.pinning) {
-        // Pin content to pinning services
-        logMain('Pinning content...')
-        const pin = await pinContentToIpfs({
-          ipfs,
-          pinning: hre.config.ipfs.pinning,
-          cid,
-          name: finalAppEnsName
+      await assertUploadContetResolve(contentHash, hre.config.ipfs.gateway)
+
+      if (hre.config.ipfs.pinata) {
+        log('Pinning content to pinata...')
+        const responseData = await pinContent({
+          contentHash,
+          appEnsName: finalAppEnsName,
+          network: hre.network.name,
+          pinata: hre.config.ipfs.pinata,
         })
-        logMain(
-          `Content pinned to IPFS on ${hre.config.ipfs.pinning.name}: ${pin}`
-        )
+        log(`Content pinned to pinata: ${responseData}`)
       }
 
       // Generate tx to publish new app to aragonPM
       const versionInfo = {
         version: nextVersion,
         contractAddress,
-        contentUri: apm.toContentUri('ipfs', contentHash)
+        contentUri: apm.toContentUri('ipfs', contentHash),
       }
 
       const txData = await apm.publishVersion(
@@ -231,12 +257,12 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
       )
 
       const activeIpfsGateway = await guessGatewayUrl({
-        ipfsApiUrl: DEFAULT_IPFS_API_ENDPOINT,
-        ipfsGateway: DEFAULT_IPFS_API_ENDPOINT,
-        contentHash
+        ipfsApiUrl: hre.config.ipfs.url,
+        ipfsGateway: hre.config.ipfs.gateway,
+        contentHash,
       })
 
-      logMain(
+      log(
         getPrettyPublishTxPreview({
           txData,
           appName: finalAppEnsName,
@@ -244,35 +270,33 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
           bump,
           contractAddress,
           contentHash,
-          ipfsGateway: activeIpfsGateway || DEFAULT_IPFS_API_ENDPOINT
+          ipfsGateway: activeIpfsGateway || DEFAULT_IPFS_API_ENDPOINT,
         })
       )
 
       if (args.dryRun) {
-        logMain(
+        log(
           getPublishTxOutput.dryRun({
             txData,
-            rootAccount: owner.address
+            rootAccount: owner.address,
           })
         )
       } else {
+        const tranactionResponse = await owner.sendTransaction({
+          to: txData.to,
+          data: apm.encodePublishVersionTxData(txData),
+        })
+
         const { chainId } = await provider.getNetwork()
         // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
         // @ts-ignore
         const explorerTxUrl = EXPLORER_CHAIN_URLS[chainId]
 
-        const tranactionResponse = await owner.sendTransaction({
-          to: txData.to,
-          data: apm.encodePublishVersionTxData(txData)
-        })
-
-        logMain(
-          getPublishTxOutput.txHash(tranactionResponse.hash, explorerTxUrl)
-        )
+        log(getPublishTxOutput.txHash(tranactionResponse.hash, explorerTxUrl))
 
         const receipt = await tranactionResponse.wait()
 
-        logMain(getPublishTxOutput.receipt(receipt))
+        log(getPublishTxOutput.receipt(receipt))
       }
 
       // For testing
@@ -317,6 +341,6 @@ async function _deployMainContract(
   // Deploy contract
   const factory = await hre.ethers.getContractFactory(contractName)
   const mainContract = await factory.deploy()
-  logMain('Implementation contract deployed')
+  log('Implementation contract deployed')
   return mainContract.address
 }

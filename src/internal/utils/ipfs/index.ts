@@ -1,3 +1,5 @@
 export * from './assertIpfsApiIsAvailable'
+export * from './assertUploadContetResolve'
 export * from './guessGatewayUrl'
+export * from './pinContent'
 export * from './uploadDirToIpfs'

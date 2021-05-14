@@ -16,7 +16,7 @@ export function getPrettyPublishTxPreview({
   bump,
   contractAddress,
   contentHash,
-  ipfsGateway
+  ipfsGateway,
 }: {
   txData: PublishVersionTxData
   appName: string
@@ -66,7 +66,7 @@ ${list.print(2)}
 export const getPublishTxOutput = {
   dryRun: ({
     txData,
-    rootAccount
+    rootAccount,
   }: {
     txData: PublishVersionTxData
     rootAccount: string
@@ -115,7 +115,7 @@ ${list.print(2)}
   
 ${list.print(2)}
 `
-  }
+  },
 }
 
 /**
@@ -139,11 +139,11 @@ class List {
   print(initialPad = 0): string {
     // Note: '1 +' accounts for the ':' added before padEnd
     const maxLenghtName =
-      1 + Math.max(...this.data.map(item => item.name.length))
+      1 + Math.max(...this.data.map((item) => item.name.length))
 
     return this.data
       .map(
-        item =>
+        (item) =>
           `${' '.repeat(initialPad)}${`${item.name}:`.padEnd(
             maxLenghtName
           )}  ${chalk.green(item.value)}`

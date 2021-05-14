@@ -850,7 +850,7 @@
     "@types/abstract-leveldown" "*"
     "@types/node" "*"
 
-"@types/lodash@^4.14.149":
+"@types/lodash@^4.14.169":
   version "4.14.169"
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.169.tgz#83c217688f07a4d9ef8f28a3ebd1d318f6ff4cbb"
   integrity sha512-DvmZHoHTFJ8zhVYwCLWbQ7uAbYQEk52Ev2/ZiQ7Y7gQGeV9pjBqjnQpECMHfKS1rCYAhMI7LHVxwyZLZinJgdw==
@@ -2767,10 +2767,10 @@ ip-regex@^4.0.0:
   resolved "https://registry.yarnpkg.com/ip-regex/-/ip-regex-4.3.0.tgz#687275ab0f57fa76978ff8f4dddc8a23d5990db5"
   integrity sha512-B9ZWJxHHOHUhUjCPrMpLD4xEq35bUTClHM1S6CBU5ixQnkZmwipwgc96vAd7AAGM9TGHvJR+Uss+/Ak6UphK+Q==
 
-ipfs-core-types@^0.4.1-rc.5+18faefe8:
-  version "0.4.1-rc.5"
-  resolved "https://registry.yarnpkg.com/ipfs-core-types/-/ipfs-core-types-0.4.1-rc.5.tgz#a259702e8403ab3e093f8f3e1050559d1446bcb9"
-  integrity sha512-FAWhtU/2GbzakC8C1Nz1jibBHurYgXYLwHpmZMTwrD8Hp/xzqsErSWw6HTZMZQoCwNdAZ4HW1LO1ilO2G9YrZw==
+ipfs-core-types@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/ipfs-core-types/-/ipfs-core-types-0.4.0.tgz#ccda075b22305e096c3e74698baa9b9e7d5f7dce"
+  integrity sha512-K0bodmABbqgybO0oHkFSbQoYoYlX7P4/DMdCcAZzUAPRD/ht7qF8ZcRLCdZhmkxDBeM5jgz4eGF+eLM5xMVNfw==
   dependencies:
     cids "^1.1.6"
     interface-datastore "^4.0.0"
@@ -2778,17 +2778,17 @@ ipfs-core-types@^0.4.1-rc.5+18faefe8:
     multiaddr "^9.0.1"
     multibase "^4.0.2"
 
-ipfs-core-utils@^0.8.1-rc.5+18faefe8:
-  version "0.8.1-rc.5"
-  resolved "https://registry.yarnpkg.com/ipfs-core-utils/-/ipfs-core-utils-0.8.1-rc.5.tgz#c6edcafb8bf637470f16de3e60cc7d17cb8a30b7"
-  integrity sha512-WGK+lqd4FT4zjBP1bagc/6HJJ7YHAEWcy30JV5F+zF5uPiobfyP8/tomeLhXQ0RK1OYnJ1vRGi+4hr8e0joEiQ==
+ipfs-core-utils@^0.8.0:
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/ipfs-core-utils/-/ipfs-core-utils-0.8.0.tgz#6bed0616ed01ba2a3ce456393666f1965baf600a"
+  integrity sha512-VT+QwQo83ZQSYy8UW03UXpJ7ry85CVf4OWXgG6g05CpCpBGlKsJovfe1ZDM65kWh1U2pFx4IXpva7qd+DRiXPw==
   dependencies:
     any-signal "^2.1.2"
     blob-to-it "^1.0.1"
     browser-readablestream-to-it "^1.0.1"
     cids "^1.1.6"
     err-code "^3.0.1"
-    ipfs-core-types "^0.4.1-rc.5+18faefe8"
+    ipfs-core-types "^0.4.0"
     ipfs-unixfs "^4.0.3"
     ipfs-utils "^7.0.0"
     it-all "^1.0.4"
@@ -2800,18 +2800,18 @@ ipfs-core-utils@^0.8.1-rc.5+18faefe8:
     timeout-abort-controller "^1.1.1"
     uint8arrays "^2.1.3"
 
-ipfs-http-client@^50.0.1-rc.5:
-  version "50.0.1-rc.5"
-  resolved "https://registry.yarnpkg.com/ipfs-http-client/-/ipfs-http-client-50.0.1-rc.5.tgz#723a9954ef161b7e929081f5f2da233c1f135cc7"
-  integrity sha512-G9ycxoSk9NMRMFoNpnQsoe2zUnvJxYrhEI0uNvvEqFEk3PzUN91kj4vXLAfVw4eorx415X4Asqq67RRdhVlHvg==
+ipfs-http-client@^50.0.0:
+  version "50.0.0"
+  resolved "https://registry.yarnpkg.com/ipfs-http-client/-/ipfs-http-client-50.0.0.tgz#e2f66798150a725c8d0962cf82a2597f36139981"
+  integrity sha512-3h/wDgyHmzVOEV3QwjkKLCiKNbAAaNe/PykpYAnleytseAzPZgG2JZzxQKWZTvcoY6wd1+5akEyrkeC9kv8r7Q==
   dependencies:
     abort-controller "^3.0.0"
     any-signal "^2.1.2"
     cids "^1.1.6"
     debug "^4.1.1"
     form-data "^4.0.0"
-    ipfs-core-types "^0.4.1-rc.5+18faefe8"
-    ipfs-core-utils "^0.8.1-rc.5+18faefe8"
+    ipfs-core-types "^0.4.0"
+    ipfs-core-utils "^0.8.0"
     ipfs-unixfs "^4.0.3"
     ipfs-utils "^7.0.0"
     ipld-block "^0.11.0"
