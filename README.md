@@ -1,94 +1,129 @@
-# Aragon Buidler plugin
+# Aragon Hardhat plugin
 
-Buidler plugin for developing Aragon apps with full front end and back end hot reloading.
+Hardhat plugin for publishing Aragon apps to [Aragon Package Manager](https://hack.aragon.org/docs/apm-intro.html).
 
-### Required plugins
+## Required plugins
 
 This plugin currently requires:
 
-- [**buidler-truffle5**](https://github.com/nomiclabs/buidler/tree/master/packages/buidler-truffle5)
-- [**buidler-web3**](https://github.com/nomiclabs/buidler/tree/master/packages/buidler-web3)
-- [**buidler-etherscan**](https://github.com/nomiclabs/buidler/tree/master/packages/buidler-etherscan)
+- [**@nomiclabs/hardhat-ethers**](https://hardhat.org/plugins/nomiclabs-hardhat-ethers.html)
+- [**hardhat-deploy**](https://hardhat.org/plugins/hardhat-deploy.html)
 
-### Installation
+## Installation
 
 ```
-yarn add --dev @aragon/buidler-aragon @nomiclabs/buidler-truffle5 @nomiclabs/buidler-web3 web3
+yarn add --dev @1hve/hardhat-aragon @nomiclabs/hardhat-ethers ethers hardhat-deploy
 ```
 
-And add the following statement to your buidler.config.js:
+And add the following statement to your hardhat.config.js:
 
 ```js
-usePlugin('@aragon/buidler-aragon')
+require('hardhat-aragon')
 ```
 
-### Tasks
+Or, if you are using TypeScript, add this to your hardhat.config.ts:
 
-#### Start task
+```ts
+import 'hardhat-aragon'
+```
 
-This plugin provides the "start" task, which allows you to develop an application while visualizing it in the browser.
+## Tasks
 
-**Task options:**
-
-- openBrowser: Whether or not to automatically open a browser tab with the client when running this task.
-- Please use buidler.config.js for additional options.
-
-### Environment extensions
-
-This plugin does not extend the environment.
+This plugin provides the `publish` task, which allows you to publish an Aragon app to the Aragon Package Manager.
 
 ### Usage
 
-To use this plugin, please use [**create-aragon-app**](https://www.npmjs.com/package/create-aragon-app) with the buidler boilerplate option. For instructions on how to use this boilerplate, please refer to [**aragon-buidler-boilerplate**](https://github.com/aragon/aragon-buidler-boilerplate).
+```sh
+hardhat [GLOBAL HARDHAT OPTIONS] publish --contract <STRING> [--dry-run] [--only-content] [--skip-app-build] [--skip-validation] bump [...constructorArgs]
+```
 
-If you don't want to use a create-aragon-app or a boilerplate, you can follow the structure of the boilerplate linked above. In essence, the regular structure of a Buidler project should do. Please refer to the [**Buidler docs**](https://buidler.dev/).
+### Options
 
-### Configuration
+--contract Contract address previously deployed.
+--dry-run Output tx data without broadcasting
+--only-content Prevents contract compilation, deployment, and artifact generation.
+--skip-app-build Skip application build.
+--skip-validation Skip validation of artifacts files.
 
-This plugin extends BuidlerConfig by adding the following fields:
+### Positional Arguments
+
+**bump** Type of bump (major, minor or patch) or semantic version
+
+**constructorArgs** Constructor arguments for the app contract. (default: [])
+
+## Config extensions
+
+You need to add the following `aragon` config to your `hardhat.config.js` file:
 
 ```js
-export interface AragonConfig {
-  appServePort?: number
-  clientServePort?: number
-  appSrcPath?: string
-  appBuildOutputPath?: string
-  hooks?: AragonConfigHooks
+module.exports = {
+  networks: {
+    mainnet: { ... }
+  },
+  aragon: {
+    appEnsName: string // counter.open.aragonpm.eth
+    appContractName: string // Counter
+  }
+};
+```
+
+Additionaly you can also configure the optional `aragon` and `ipfs` configs:
+
+```js
+module.exports = {
+  networks: {
+    mainnet: { ... }
+  },
+  aragon: {
+    appEnsName: string // counter.open.aragonpm.eth
+    appContractName: string // Counter
+    appRoles: Role[]
+    appSrcPath: string // app/
+    appBuildOutputPath: string // dist/
+    appBuildScript: string  // build/
+    ignoreFilesPath: string // .
+  },
+  ipfs: {
+    url: string // https://ipfs.infura.io:5001/
+    gateway: string // https://ipfs.io/
+    pinata: {
+      key: "YOUR_PINATA_API_KEY"
+      secret: "YOUR_PINATA_API_SECRET_KEY"
+    }
+  }
+```
+
+Where `Role` has the interface:
+
+```ts
+interface Role {
+  name: string // 'Create new payments'
+  id: string // 'CREATE_PAYMENTS_ROLE'
+  params: string[] //  ['Token address', ... ]
 }
 ```
 
-### Hooks
-
-If you need to perform some tasks before deploying your application's proxy, e.g. deploying a token and passing that token in your proxy's initialize function, you can use the hooks object within the BuidlerConfig object. This object simply contains functions, which, if named correctly, will be called at the appropriate moments in the development pipeline:
+Finally the plugin also extend the hardhat network configuration to allow a custom `appEnsName` and `ensRegistry` per network:
 
 ```js
-export interface AragonConfigHooks {
-  preDao?: (bre: BuidlerRuntimeEnvironment) => Promise<void> | void
-  postDao?: (
-    dao: KernelInstance,
-    bre: BuidlerRuntimeEnvironment
-  ) => Promise<void> | void
-  preInit?: (bre: BuidlerRuntimeEnvironment) => Promise<void> | void
-  postInit?: (
-    proxy: Truffle.ContractInstance,
-    bre: BuidlerRuntimeEnvironment
-  ) => Promise<void> | void
-  getInitParams?: (bre: BuidlerRuntimeEnvironment) => Promise<any[]> | any[]
-  postUpdate?: (
-    proxy: Truffle.ContractInstance,
-    bre: BuidlerRuntimeEnvironment
-  ) => Promise<void> | void
-}
+networks: {
+    hardhat: {
+      ensRegistry: '0xaafca6b0c89521752e559650206d7c925fd0e530',
+    },
+    rinkeby: {
+      appEnsName: 'counter.aragonpm.eth',
+      ensRegistry: '0x98df287b6c145399aaa709692c8d308357bc085d',
+      ...
+    },
+  },
 ```
 
-For an example on how to use these hooks, please see the [**token-wrapper tests**](https://github.com/aragon/buidler-aragon/blob/master/test/projects/token-wrapper/scripts/hooks.js) within the plugin's test projects.
+## Environment extensions
 
-### Development
+This plugins adds an `ipfs` object to the Hardhat Runtime Environment.
 
-Please refer to the [**Buidler docs**](https://buidler.dev/advanced/building-plugins.html) for plugin development.
+This object has the same API that [`ipfs-http-client`](https://github.com/ipfs/js-ipfs/tree/master/packages/ipfs-http-client).
 
-After cloning this repository, make sure you run `npm run dev` so that all required contract artifacts are available.
+This object is already initialized and ready to interact with the IPFS network. You can configure the node `url` to connect with on the hardhat.config file.
 
-### Typescript support
-
-You need to add this to your tsconfig.json's files array: "node_modules/@aragon/buidler-aragon/src/type-extensions.d.ts"
+^Note: The plugin default `url` is `http://localhost:5001/` assuming you have a local IPFS node at that endpoint running. You can configure a custom `url` node like `https://ipfs.infura.io:5001/` if you don't want to run your own node.

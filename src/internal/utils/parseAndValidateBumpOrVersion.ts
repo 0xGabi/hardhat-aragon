@@ -26,7 +26,7 @@ export default function parseAndValidateBumpOrVersion(
     if (!nextVersion) throw new HardhatPluginError(`Invalid bump ${bump}`)
     return {
       bump,
-      nextVersion
+      nextVersion,
     }
   } else if (semver.valid(bumpOrVersion)) {
     // case bumpOrVersion = version
@@ -44,7 +44,7 @@ export default function parseAndValidateBumpOrVersion(
       if (semver.inc(prevVersion, bump) === nextVersion)
         return {
           bump,
-          nextVersion
+          nextVersion,
         }
 
     throw new HardhatPluginError(

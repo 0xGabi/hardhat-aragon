@@ -37,7 +37,7 @@ export function getAppNameParts(
   const nameParts = getFullAppName(appName).split('.')
   return {
     shortName: nameParts[0],
-    registryName: nameParts.slice(1).join('.')
+    registryName: nameParts.slice(1).join('.'),
   }
 }
 

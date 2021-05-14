@@ -14,7 +14,6 @@ export const MANIFEST_NAME = 'manifest.json'
 export const FLAT_CODE_NAME = 'code.sol'
 
 // Special addresses used for permissions
-export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 export const ANY_ADDRESS = '0xffffffffffffffffffffffffffffffffffffffff'
 
 /**
