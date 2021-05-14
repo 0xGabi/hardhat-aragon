@@ -1,6 +1,6 @@
 {
   "name": "@1hive/hardhat-aragon",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Aragon Hardhat plugin",
   "author": "1hive <info@1hive.org>",
   "license": "MIT",
@@ -19,8 +19,8 @@
     "README.md"
   ],
   "scripts": {
-    "lint:fix": "prettier --write 'src/**/*.{js,ts}' 'test/**/*.{js,ts}' && tslint --fix --config tslint.json --project tsconfig.json",
-    "lint": "tslint --config tslint.json --project tsconfig.json",
+    "lint:fix": "prettier --write 'src/**/*.{js,ts}' 'test/**/*.{js,ts}' && eslint --fix",
+    "lint": "eslint",
     "test": "mocha --exit --recursive 'test/**/*.test.ts'",
     "build": "tsc",
     "watch": "tsc -w",
@@ -69,7 +69,7 @@
   "peerDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
     "ethers": "^5.1.4",
-    "hardhat-deploy": "^0.7.5",
-    "hardhat": "^2.2.1"
+    "hardhat": "^2.2.1",
+    "hardhat-deploy": "^0.7.5"
   }
 }

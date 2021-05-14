@@ -25,8 +25,8 @@ export function matchContractRoles(
   }
 
   const contractRoles = uniqBy(
-    flatten(functions.map(fn => fn.roles)),
-    role => role.id
+    flatten(functions.map((fn) => fn.roles)),
+    (role) => role.id
   )
 
   for (const role of roles) {

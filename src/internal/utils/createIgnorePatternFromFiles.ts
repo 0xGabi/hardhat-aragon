@@ -16,7 +16,7 @@ export default function createIgnorePatternFromFiles(
       const ignoreLines = data
         .trim()
         .split('\n')
-        .filter(l => l.trim())
+        .filter((l) => l.trim())
       ignorePatterns.push(...ignoreLines)
     }
   }
