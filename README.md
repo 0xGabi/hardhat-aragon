@@ -126,4 +126,5 @@ This object has the same API that [`ipfs-http-client`](https://github.com/ipfs/j
 
 This object is already initialized and ready to interact with the IPFS network. You can configure the node `url` to connect with on the hardhat.config file.
 
-^Note: The plugin default `url` is `http://localhost:5001/` assuming you have a local IPFS node at that endpoint running. You can configure a custom `url` node like `https://ipfs.infura.io:5001/` if you don't want to run your own node.
+> **Note**<br>
+> The plugin default `url` is `http://localhost:5001/` assuming you have a local IPFS node at that endpoint running. You can configure a custom `url` node like `https://ipfs.infura.io:5001/` if you don't want to run your own node.
