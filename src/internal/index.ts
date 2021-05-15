@@ -201,13 +201,17 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
         log(`Using provided contract address: ${contractAddress}`)
       } else if (!prevVersion || bump === 'major') {
         log(
-          'Deploying new implementation contract. Or reusing last deployment if no changes.'
+          'Deploying new implementation or reusing last deployment if no changes.'
         )
         const deployment = await hre.deployments.deploy(appContractName, {
           from: owner.address,
           args: args.constructorArgs,
           log: true,
           deterministicDeployment: true,
+          gasLimit:
+            hre.network.config.gas === 'auto'
+              ? undefined
+              : hre.network.config.gas,
         })
         contractAddress = deployment.address
         log(`New implementation contract address: ${contractAddress}`)
