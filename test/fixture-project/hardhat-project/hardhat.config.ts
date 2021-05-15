@@ -41,6 +41,11 @@ const config: HardhatUserConfig = {
     localhost: {
       ensRegistry: '0xaafca6b0c89521752e559650206d7c925fd0e530',
     },
+    frame: {
+      url: 'http://localhost:1248',
+      httpHeaders: { origin: 'hardhat' },
+      ensRegistry: '0x4E065c622d584Fbe5D9078C3081840155FA69581',
+    },
   },
 }
 

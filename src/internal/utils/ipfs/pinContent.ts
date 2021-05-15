@@ -10,11 +10,13 @@ const PIN_BY_HASH_API = 'pinByHash'
 export async function pinContent({
   contentHash,
   appEnsName,
+  version,
   network,
   pinata,
 }: {
   contentHash: string
   appEnsName: string
+  version: string
   network: string
   pinata: PinataConfig
 }): Promise<any | undefined> {
@@ -22,7 +24,7 @@ export async function pinContent({
   const body = {
     hashToPin: contentHash,
     pinataMetadata: {
-      name: `${network}:${appEnsName}`,
+      name: `${network}:${appEnsName}@${version}`,
     },
   }
   try {

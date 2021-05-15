@@ -3,7 +3,11 @@ import path from 'path'
 import { providers } from 'ethers'
 import { extendConfig, extendEnvironment, task } from 'hardhat/config'
 import { HardhatPluginError, lazyObject } from 'hardhat/plugins'
-import { HardhatConfig, HardhatUserConfig } from 'hardhat/types'
+import {
+  HardhatConfig,
+  HardhatUserConfig,
+  HttpNetworkConfig,
+} from 'hardhat/types'
 import * as types from 'hardhat/internal/core/params/argumentTypes'
 
 import {
@@ -40,8 +44,10 @@ import {
   assertUploadContetResolve,
 } from './utils/ipfs'
 
-import '@nomiclabs/hardhat-ethers'
-import 'hardhat-deploy'
+// We ommit these imports beacuse they are peer dependencies and will be added
+// by the plugin user. Otherwise naming conflicts may araise
+// import '@nomiclabs/hardhat-ethers'
+// import 'hardhat-deploy'
 
 // This import is needed to let the TypeScript compiler know that it should include your type
 // extensions in your npm package's types file.
@@ -151,23 +157,20 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
       // for apps that were deployed to diferent repo names
       const finalAppEnsName = hre.network.config.appEnsName ?? appEnsName
 
+      // Setup provider with the right ENS registy address
       let provider
-      if (hre.network.name === 'localhost') {
+      if (hre.network.name === 'hardhat') {
+        hre.ethers.provider.network.ensAddress = hre.network.config.ensRegistry
+        provider = hre.ethers.provider
+      } else {
         provider = new hre.ethers.providers.JsonRpcProvider(
-          hre.config.networks.localhost.url,
+          (hre.network.config as HttpNetworkConfig).url,
           {
-            name: 'localhost',
+            name: hre.network.name,
             ensAddress: hre.network.config.ensRegistry,
-            chainId: 31337,
+            chainId: parseInt(await hre.getChainId()),
           }
         )
-      } else {
-        // Mutate provider with new ENS address
-        if (hre.network.config.ensRegistry) {
-          hre.ethers.provider.network.ensAddress =
-            hre.network.config.ensRegistry
-        }
-        provider = hre.ethers.provider
       }
 
       const prevVersion = await _getLastestVersionIfExists(
@@ -197,7 +200,9 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
         contractAddress = existingContractAddress
         log(`Using provided contract address: ${contractAddress}`)
       } else if (!prevVersion || bump === 'major') {
-        log('Deploying new implementation contract')
+        log(
+          'Deploying new implementation contract. Or reusing last deployment if no changes.'
+        )
         const deployment = await hre.deployments.deploy(appContractName, {
           from: owner.address,
           args: args.constructorArgs,
@@ -260,6 +265,7 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
         const response = await pinContent({
           contentHash,
           appEnsName: finalAppEnsName,
+          version: nextVersion,
           network: hre.network.name,
           pinata: hre.config.ipfs.pinata,
         })
