@@ -221,7 +221,7 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
       }
 
       if (!args.skipAppBuild && pathExists(appSrcPath)) {
-        log(`Running app build script`)
+        log(`Running app build script...`)
         try {
           await execa('npm', ['run', appBuildScript], {
             cwd: appSrcPath,
