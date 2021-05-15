@@ -4,7 +4,7 @@ Hardhat plugin for publishing Aragon apps to [Aragon Package Manager](https://ha
 
 ## Required plugins
 
-This plugin currently requires:
+This plugin requires:
 
 - [**@nomiclabs/hardhat-ethers**](https://hardhat.org/plugins/nomiclabs-hardhat-ethers.html)
 - [**hardhat-deploy**](https://hardhat.org/plugins/hardhat-deploy.html)
@@ -18,13 +18,17 @@ yarn add --dev @1hve/hardhat-aragon @nomiclabs/hardhat-ethers ethers hardhat-dep
 And add the following statement to your hardhat.config.js:
 
 ```js
-require('hardhat-aragon')
+require('@1hive/hardhat-aragon')
+require('@nomiclabs/hardhat-ethers')
+require('hardhat-deploy')
 ```
 
 Or, if you are using TypeScript, add this to your hardhat.config.ts:
 
 ```ts
-import 'hardhat-aragon'
+import '@1hive/hardhat-aragon'
+import '@nomiclabs/hardhat-ethers'
+import 'hardhat-deploy'
 ```
 
 ## Tasks
