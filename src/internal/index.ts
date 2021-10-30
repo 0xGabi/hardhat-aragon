@@ -20,7 +20,7 @@ import {
   EXPLORER_CHAIN_URLS,
 } from '../constants'
 import { RepoContent } from '../types'
-import { TASK_PUBLISH } from './task-names'
+import { TASK_COMPILE, TASK_PUBLISH } from './task-names'
 
 import { log } from './ui/logger'
 import * as apm from './utils/apm'
@@ -203,6 +203,7 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
         log(
           'Deploying new implementation or reusing last deployment if no changes.'
         )
+        await hre.run(TASK_COMPILE)
         const deployment = await hre.deployments.deploy(appContractName, {
           from: owner.address,
           args: args.constructorArgs,
@@ -223,13 +224,14 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
       if (!args.skipAppBuild && pathExists(appSrcPath)) {
         log(`Running app build script...`)
         try {
+          await execa('npm', ['install'], {
+            cwd: appSrcPath,
+          })
           await execa('npm', ['run', appBuildScript], {
             cwd: appSrcPath,
           })
         } catch (e) {
-          throw new HardhatPluginError(
-            `Make sure the app dependencies were installed`
-          )
+          throw new HardhatPluginError(`Error during app build: ${e}`)
         }
       }
 
