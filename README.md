@@ -51,9 +51,9 @@ hardhat [GLOBAL HARDHAT OPTIONS] publish --contract <STRING> [--dry-run] [--only
 
 ### Positional Arguments
 
-**bump** Type of bump (major, minor or patch) or semantic version
+- **bump**: Type of bump (major, minor or patch) or semantic version
 
-**constructorArgs** Constructor arguments for the app contract. (default: [])
+- **constructorArgs**: Constructor arguments for the app contract. (default: `[]`)
 
 ## Config extensions
 
