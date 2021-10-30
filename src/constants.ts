@@ -27,6 +27,9 @@ export const EXPLORER_CHAIN_URLS = {
   5: 'https://goerli.etherscan.io/',
   42: 'https://kovan.etherscan.io/',
   100: 'https://blockscout.com/xdai/mainnet/',
-  137: 'https://explorer-mainnet.maticvigil.com/',
+  137: 'https://polygonscan.com/',
   56: 'https://bscscan.com/',
+  80001: 'https://mumbai.polygonscan.com/',
+  42161: 'https://arbiscan.io/',
+  421611: 'https://testnet.arbiscan.io/',
 }
