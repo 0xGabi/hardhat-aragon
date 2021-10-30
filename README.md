@@ -43,11 +43,11 @@ hardhat [GLOBAL HARDHAT OPTIONS] publish --contract <STRING> [--dry-run] [--only
 
 ### Options
 
---contract Contract address previously deployed.
---dry-run Output tx data without broadcasting
---only-content Prevents contract compilation, deployment, and artifact generation.
---skip-app-build Skip application build.
---skip-validation Skip validation of artifacts files.
+- `--contract`: Contract address previously deployed.
+- `--dry-run`: Output tx data without broadcasting.
+- `--only-content`: Prevents contract compilation, deployment, and artifact generation.
+- `--skip-app-build`: Skip application build.
+- `--skip-validation`: Skip validation of artifacts files.
 
 ### Positional Arguments
 
