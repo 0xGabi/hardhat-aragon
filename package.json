@@ -55,9 +55,9 @@
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.9.0",
     "eslint-plugin-prettier": "^3.1.2",
-    "ethers": "^5.1.4",
-    "hardhat": "^2.2.1",
-    "hardhat-deploy": "^0.7.5",
+    "ethers": "^5.5.1",
+    "hardhat": "^2.6.7",
+    "hardhat-deploy": "^0.9.4",
     "kill-port": "^1.6.0",
     "mocha": "^7.1.2",
     "nyc": "^15.0.1",
@@ -68,8 +68,8 @@
   },
   "peerDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
-    "ethers": "^5.1.4",
-    "hardhat": "^2.2.1",
-    "hardhat-deploy": "^0.7.5"
+    "ethers": "^5.5.1",
+    "hardhat": "^2.6.7",
+    "hardhat-deploy": "^0.9.4"
   }
 }
