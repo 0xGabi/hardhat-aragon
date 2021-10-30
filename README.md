@@ -57,7 +57,7 @@ hardhat [GLOBAL HARDHAT OPTIONS] publish --contract <STRING> [--dry-run] [--only
 
 ## Config extensions
 
-You need to add the following `aragon` config to your `hardhat.config.js` file:
+You need to add the following `aragon` config to your `hardhat.config` file:
 
 ```js
 module.exports = {
@@ -128,7 +128,7 @@ This plugins adds an `ipfs` object to the Hardhat Runtime Environment.
 
 This object has the same API that [`ipfs-http-client`](https://github.com/ipfs/js-ipfs/tree/master/packages/ipfs-http-client).
 
-This object is already initialized and ready to interact with the IPFS network. You can configure the node `url` to connect with on the hardhat.config file.
+This object is already initialized and ready to interact with the IPFS network. You can configure the node `url` to connect with on the `hardhat.config` file.
 
 > **Note**<br>
 > The plugin default `url` is `http://localhost:5001/` assuming you have a local IPFS node at that endpoint running. You can configure a custom `url` node like `https://ipfs.infura.io:5001/` if you don't want to run your own node.
