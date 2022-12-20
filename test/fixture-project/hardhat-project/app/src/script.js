@@ -11,7 +11,7 @@ app.store(
     const version = await getVersion()
     const newState = {
       ...state,
-      version
+      version,
     }
     console.log(`newState`, newState)
 
@@ -44,7 +44,7 @@ app.store(
  ***********************/
 
 function initializeState() {
-  return async cachedState => {
+  return async (cachedState) => {
     console.log(`script.js: init state`)
 
     const version = await getVersion()
@@ -52,7 +52,7 @@ function initializeState() {
     return {
       ...cachedState,
       count: 0,
-      version
+      version,
     }
   }
 }

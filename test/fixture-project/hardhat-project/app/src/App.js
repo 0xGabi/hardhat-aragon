@@ -43,7 +43,7 @@ function App() {
       <Tabs
         items={['Tab 1', 'Tab 2']}
         selected={pageIndex}
-        onChange={index => requestPath(`/tab/${index + 1}`)}
+        onChange={(index) => requestPath(`/tab/${index + 1}`)}
       />
       <Box
         css={`

@@ -4,6 +4,10 @@ export interface PinataConfig {
   key: string
   secret: string
 }
+export interface FleekConfig {
+  key: string
+  secret: string
+}
 
 export interface IpfsUserConfig {
   url?: string
@@ -15,6 +19,7 @@ export interface IpfsConfig {
   url: string
   gateway: string
   pinata?: PinataConfig
+  fleek?: FleekConfig
 }
 
 export interface Dependencies {

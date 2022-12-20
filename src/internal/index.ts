@@ -46,8 +46,8 @@ import {
 
 // We ommit these imports beacuse they are peer dependencies and will be added
 // by the plugin user. Otherwise naming conflicts may araise
-// import '@nomiclabs/hardhat-ethers'
-// import 'hardhat-deploy'
+import '@nomiclabs/hardhat-ethers'
+import 'hardhat-deploy'
 
 // This import is needed to let the TypeScript compiler know that it should include your type
 // extensions in your npm package's types file.
@@ -266,6 +266,9 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
 
       await assertUploadContetResolve(contentHash, hre.config.ipfs.gateway)
 
+      if (hre.config.ipfs.fleek && hre.config.ipfs.fleek.key !== '') {
+        log('Storage Pinning content to Fleek...')
+      }
       if (hre.config.ipfs.pinata && hre.config.ipfs.pinata.key !== '') {
         log('Pinning content to pinata...')
         const response = await pinContent({
