@@ -2,6 +2,7 @@ export const DEFAULT_IPFS_API_ENDPOINT = 'http://localhost:5001/'
 export const DEFAULT_IPFS_GATEWAY = 'https://ipfs.io/'
 
 export const DEFAULT_PINATA_API_ENDPOINT = 'https://api.pinata.cloud/'
+export const DEFAULT_FLEEK_API_ENDPOINT = 'https://storageapi2.fleek.co/'
 
 export const DEFAULT_APP_SRC_PATH = 'app/'
 export const DEFAULT_APP_BUILD_PATH = 'dist/'

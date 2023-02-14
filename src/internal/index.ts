@@ -52,6 +52,7 @@ import 'hardhat-deploy'
 // This import is needed to let the TypeScript compiler know that it should include your type
 // extensions in your npm package's types file.
 import './type-extensions'
+import { fleekUploadContent } from './utils/fleek/fleek'
 
 extendConfig(
   (config: HardhatConfig, userConfig: Readonly<HardhatUserConfig>) => {
@@ -59,6 +60,7 @@ extendConfig(
       url: userConfig.ipfs?.url ?? DEFAULT_IPFS_API_ENDPOINT,
       gateway: userConfig.ipfs?.gateway ?? DEFAULT_IPFS_GATEWAY,
       pinata: userConfig.ipfs?.pinata,
+      fleek: userConfig.ipfs?.fleek,
     }
 
     config.aragon = {
@@ -188,8 +190,11 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
       await apm.assertCanPublish(finalAppEnsName, owner.address, provider)
 
       const ipfs = hre.ipfs
-      await assertIpfsApiIsAvailable(ipfs, hre.config.ipfs.url)
-
+      log(
+        `assertIpfsApiIsAvailable ${ipfs}, hre.config.ipfs.url: ${hre.config.ipfs.url}`
+      )
+      // await assertIpfsApiIsAvailable(ipfs, hre.config.ipfs.url)
+      // return
       // Using let + if {} block instead of a ternary operator
       // to assign value and log status to console
       let contractAddress: string
@@ -268,6 +273,12 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
 
       if (hre.config.ipfs.fleek && hre.config.ipfs.fleek.key !== '') {
         log('Storage Pinning content to Fleek...')
+        fleekUploadContent({
+          contentHash,
+          appEnsName: finalAppEnsName,
+          version: nextVersion,
+          hre,
+        })
       }
       if (hre.config.ipfs.pinata && hre.config.ipfs.pinata.key !== '') {
         log('Pinning content to pinata...')

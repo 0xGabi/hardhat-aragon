@@ -13,6 +13,7 @@ export interface IpfsUserConfig {
   url?: string
   gateway?: string
   pinata?: PinataConfig
+  fleek?: FleekConfig
 }
 
 export interface IpfsConfig {
