@@ -1,6 +1,6 @@
 {
   "name": "@1hive/hardhat-aragon",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Aragon Hardhat plugin",
   "author": "1hive <info@1hive.org>",
   "license": "MIT",
@@ -23,17 +23,21 @@
     "lint": "eslint",
     "test": "mocha --exit --recursive 'test/**/*.test.ts'",
     "build": "tsc",
+    "postbuild": "out='lib/node_modules' && root=$(npm root) && mkdir -p $out && npm ls --production --parseable | tail --lines=+2 | sed \"s%$root%%\" | cut --delimiter='/' --fields=2 | sort | uniq | xargs -I % cp -r \"$root/%\" $out",
     "watch": "tsc -w",
     "test:coverage": "nyc --all --reporter=lcov --reporter=text-summary --reporter=html yarn test",
     "report-coverage": "codecov"
   },
   "dependencies": {
+    "@fleekhq/fleek-storage-js": "^1.0.23",
     "@solidity-parser/parser": "^0.12.2",
     "chalk": "^4.1.1",
     "execa": "^5.0.0",
     "fs-extra": "^8.1.0",
     "ipfs-http-client": "^50.0.0",
-    "node-fetch": "^2.6.1"
+    "ipfs-only-hash": "^4.0.0",
+    "node-fetch": "^2.6.1",
+    "typestub-ipfs-only-hash": "^4.0.0"
   },
   "devDependencies": {
     "@aragon/abis": "^1.1.0",
@@ -64,6 +68,7 @@
     "prettier": "2.0.5",
     "sinon": "^9.0.1",
     "ts-node": "^8.1.0",
+    "tsconfig-paths": "^4.1.2",
     "typescript": "^4.2.4"
   },
   "peerDependencies": {

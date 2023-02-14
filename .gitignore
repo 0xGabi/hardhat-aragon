@@ -7,3 +7,6 @@ cache/
 dist/
 coverage
 .nyc_output
+.env
+settings.json
+yarn-error.log
