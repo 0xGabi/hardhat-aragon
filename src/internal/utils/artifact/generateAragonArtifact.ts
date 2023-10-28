@@ -28,11 +28,8 @@ export function generateAragonArtifact(
   abi: ethers.utils.Fragment[],
   flatCode: string
 ): AragonArtifact {
-  const abiBySignature = keyBy(
-    new ethers.utils.Interface(abi).functions,
-    (functionFragment: ethers.utils.FunctionFragment) =>
-      functionFragment.format()
-  )
+  const iface = new ethers.utils.Interface(abi)
+  
   const contractFunctions = parseContractFunctions(flatCode, contractName, {
     onlyTargetContract: true,
   })
@@ -43,7 +40,7 @@ export function generateAragonArtifact(
       roles: parsedFn.roles.map((role) => role.id),
       notice: parsedFn.notice,
       abi:
-        abiBySignature[parsedFn.sig] ||
+        iface.getFunction(parsedFn.sig).format("json") ||
         (parsedFn.sig === 'fallback()' ? abiFallback : null),
       sig: parsedFn.sig,
     })),
