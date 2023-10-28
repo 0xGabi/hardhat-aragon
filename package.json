@@ -1,6 +1,6 @@
 {
   "name": "@1hive/hardhat-aragon",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Aragon Hardhat plugin",
   "author": "1hive <info@1hive.org>",
   "license": "MIT",
