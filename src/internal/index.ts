@@ -134,6 +134,10 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
     'onlyContent',
     'Prevents contract compilation, deployment, and artifact generation.'
   )
+  .addFlag(
+    'forceArtifactsGeneration',
+    'Force the generation of artifacts even if the contract has not changed.'
+  )
   .addFlag('skipAppBuild', 'Skip application build.')
   .addFlag('skipValidation', 'Skip validation of artifacts files.')
   .addFlag('dryRun', 'Output tx data without broadcasting')
@@ -237,7 +241,7 @@ task(TASK_PUBLISH, 'Publish a new app version to Aragon Package Manager')
 
       if (!args.onlyContent) {
         let content: RepoContent
-        if (prevVersion && bump !== 'major') {
+        if (!args.forceArtifactsGeneration && prevVersion && bump !== 'major') {
           log(`Resolving Aragon artifacts from Aragon Package Manager`)
           content = await apm.resolveRepoContentUri(prevVersion.contentUri, {
             ipfsGateway: hre.config.ipfs.gateway,
