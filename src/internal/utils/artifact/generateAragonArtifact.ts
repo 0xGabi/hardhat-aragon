@@ -40,7 +40,7 @@ export function generateAragonArtifact(
       roles: parsedFn.roles.map((role) => role.id),
       notice: parsedFn.notice,
       abi:
-        iface.getFunction(parsedFn.sig).format('json') ||
+        JSON.parse(iface.getFunction(parsedFn.sig).format('json')) ||
         (parsedFn.sig === 'fallback()' ? abiFallback : null),
       sig: parsedFn.sig,
     })),
