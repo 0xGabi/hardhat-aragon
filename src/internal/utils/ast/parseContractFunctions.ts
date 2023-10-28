@@ -7,7 +7,7 @@ import {
   FunctionDefinition,
   ModifierInvocation,
   VariableDeclaration,
-} from '@solidity-parser/parser/dist/ast-types'
+} from '@solidity-parser/parser/src/ast-types'
 
 import { parseFunctionsNotices } from './parseFunctionNotices'
 import { AragonContractFunction } from './types'
@@ -69,7 +69,7 @@ function parseFunctionSignatureFromNode(node: FunctionDefinition): string {
      * Using an isolated function to use a switch / return structure
      */
     (nodeParam: VariableDeclaration): string => {
-      switch (nodeParam.typeName.type) {
+      switch (nodeParam.typeName?.type) {
         case 'ElementaryTypeName':
           return nodeParam.typeName.name
         case 'ArrayTypeName':
@@ -140,7 +140,7 @@ export function parseContractFunctions(
       ) {
         const returnParam = node.returnParameters[0]
         if (
-          returnParam.typeName.type === 'ArrayTypeName' &&
+          returnParam.typeName?.type === 'ArrayTypeName' &&
           returnParam.typeName.baseTypeName.type === 'ElementaryTypeName' &&
           returnParam.typeName.baseTypeName.name === 'uint256'
         )
@@ -162,34 +162,37 @@ export function parseContractFunctions(
   function parseContract(node: ContractDefinition): void {
     // Parse functions
     for (const subNode of node.subNodes) {
-      if (
-        subNode.type === 'FunctionDefinition' &&
-        // Ignore constructors
-        !subNode.isConstructor &&
-        // Only consider functions that modify state and are public / external
-        subNode.visibility !== 'internal' &&
-        subNode.visibility !== 'private' &&
-        subNode.stateMutability !== 'view' &&
-        subNode.stateMutability !== 'pure' &&
-        subNode.stateMutability !== 'constant'
-      ) {
-        // Check the modifiers
-        functions.push({
-          name: subNode.name || '',
-          notice: '',
-          // Parse parameters for signature, some functions may be overloaded
-          sig: parseFunctionSignatureFromNode(subNode),
-          // Parse the auth modifiers
-          roles: subNode.modifiers
-            .filter((modNode) => ['auth', 'authP'].includes(modNode.name))
-            .map((authModNode) => ({
-              id: parseRoleIdFromNode(authModNode),
-              paramCount: parseRoleParamCountFromNode(
-                authModNode,
-                authHelperFunctions
-              ),
-            })),
-        })
+      if (subNode.type === 'FunctionDefinition') {
+        const functionNode = subNode as FunctionDefinition
+
+        if (
+          // Ignore constructors
+          !functionNode.isConstructor &&
+          // Only consider functions that modify state and are public / external
+          functionNode.visibility !== 'internal' &&
+          functionNode.visibility !== 'private' &&
+          functionNode.stateMutability !== 'view' &&
+          functionNode.stateMutability !== 'pure' &&
+          functionNode.stateMutability !== 'constant'
+        ) {
+          // Check the modifiers
+          functions.push({
+            name: functionNode.name || '',
+            notice: '',
+            // Parse parameters for signature, some functions may be overloaded
+            sig: parseFunctionSignatureFromNode(functionNode),
+            // Parse the auth modifiers
+            roles: functionNode.modifiers
+              .filter((modNode) => ['auth', 'authP'].includes(modNode.name))
+              .map((authModNode) => ({
+                id: parseRoleIdFromNode(authModNode),
+                paramCount: parseRoleParamCountFromNode(
+                  authModNode,
+                  authHelperFunctions
+                ),
+              })),
+          })
+        }
       }
     }
 

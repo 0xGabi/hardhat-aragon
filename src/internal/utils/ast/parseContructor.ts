@@ -1,5 +1,5 @@
 import { parse, visit } from '@solidity-parser/parser'
-import { FunctionDefinition } from '@solidity-parser/parser/dist/ast-types'
+import { FunctionDefinition } from '@solidity-parser/parser/src/ast-types'
 
 /**
  * Returns true if a contract has a constructor, otherwise false.

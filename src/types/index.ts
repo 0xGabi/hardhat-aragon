@@ -89,7 +89,10 @@ export interface AragonArtifactFunction {
    * The function's ABI element is included for convenience of the client
    * null if ABI is not found for this signature
    */
-  abi: utils.Fragment | null
+  abi:
+    | string
+    | { payable: boolean; stateMutability: string; type: string }
+    | null
 }
 
 export interface RoleWithBytes extends Role {

@@ -1,5 +1,5 @@
 import { parse, visit } from '@solidity-parser/parser'
-import { StateVariableDeclaration } from '@solidity-parser/parser/dist/ast-types'
+import { StateVariableDeclaration } from '@solidity-parser/parser/src/ast-types'
 
 /**
  * Finds global storage variable declarations with initialized values, e.g 'int a = 1'.
@@ -17,7 +17,8 @@ export function parseGlobalVariableAssignments(sourceCode: string): string[] {
         !variable.isDeclaredConst &&
         variable.expression
       ) {
-        variables.push(variable.name)
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        variables.push(variable.name!)
       }
     },
   })
